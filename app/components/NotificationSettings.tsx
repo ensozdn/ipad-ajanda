@@ -10,9 +10,11 @@ interface NotificationSettingsProps {
 
 export default function NotificationSettings({ hasPermission, onRequestPermission }: NotificationSettingsProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [permission, setPermission] = useState(hasPermission);
+  const [permission, setPermission] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     setPermission(hasPermission);
   }, [hasPermission]);
 
@@ -38,17 +40,19 @@ export default function NotificationSettings({ hasPermission, onRequestPermissio
   return (
     <>
       {/* Bildirim Durumu Badge */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className={`px-4 py-2 rounded-lg transition-colors font-medium ${
-          permission 
-            ? 'bg-[var(--success)]/20 text-[var(--success)] hover:bg-[var(--success)]/30' 
-            : 'bg-[var(--warning)]/20 text-[var(--warning)] hover:bg-[var(--warning)]/30'
-        }`}
-        title="Bildirim Ayarları"
-      >
-        🔔 {permission ? 'Bildirimler Aktif' : 'Bildirimler Kapalı'}
-      </button>
+      {mounted && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className={`px-4 py-2 rounded-lg transition-colors font-medium ${
+            permission 
+              ? 'bg-[var(--success)]/20 text-[var(--success)] hover:bg-[var(--success)]/30' 
+              : 'bg-[var(--warning)]/20 text-[var(--warning)] hover:bg-[var(--warning)]/30'
+          }`}
+          title="Bildirim Ayarları"
+        >
+          🔔 {permission ? 'Bildirimler Aktif' : 'Bildirimler Kapalı'}
+        </button>
+      )}
 
       {/* Modal */}
       {isOpen && (
