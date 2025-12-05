@@ -11,4 +11,12 @@ export interface Event {
   notificationTime?: number; // Kaç dakika önce bildirim (örn: 15, 30, 60)
 }
 
-export type ViewMode = 'month' | 'week' | 'day' | 'list';
+export type ViewMode = 'month' | 'week' | 'day' | 'list' | 'documents';
+
+export interface Document {
+  id: string;
+  title: string;
+  createdAt: Date;
+  updatedAt: Date;
+  imageData: string; // base64 encoded canvas data
+}

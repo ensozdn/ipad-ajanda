@@ -6,8 +6,7 @@ import WeekView from './components/Calendar/WeekView';
 import DayView from './components/Calendar/DayView';
 import ListView from './components/Calendar/ListView';
 import EventModal from './components/EventModal';
-import DocumentsView from './components/DocumentsView';
-import { Event, ViewMode, Document } from './types';
+import { Event, ViewMode } from './types';
 import NotificationSettings from './components/NotificationSettings';
 import { useNotifications } from './hooks/useNotifications';
 
@@ -16,7 +15,6 @@ export default function Home() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<ViewMode>('month');
   const [events, setEvents] = useState<Event[]>([]);
-  const [documents, setDocuments] = useState<Document[]>([]);
   const [showEventModal, setShowEventModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
@@ -60,28 +58,11 @@ export default function Home() {
       setEvents(demoEvents);
       localStorage.setItem('ajanda-events', JSON.stringify(demoEvents));
     }
-
-    // Belgeleri yükle
-    const savedDocuments = localStorage.getItem('ajanda-documents');
-    if (savedDocuments) {
-      const parsedDocuments = JSON.parse(savedDocuments);
-      const documentsWithDates = parsedDocuments.map((doc: any) => ({
-        ...doc,
-        createdAt: new Date(doc.createdAt),
-        updatedAt: new Date(doc.updatedAt)
-      }));
-      setDocuments(documentsWithDates);
-    }
   }, []);
 
   const saveEvents = (newEvents: Event[]) => {
     setEvents(newEvents);
     localStorage.setItem('ajanda-events', JSON.stringify(newEvents));
-  };
-
-  const saveDocuments = (newDocuments: Document[]) => {
-    setDocuments(newDocuments);
-    localStorage.setItem('ajanda-documents', JSON.stringify(newDocuments));
   };
 
   const handleSaveEvent = (event: Event) => {
@@ -99,25 +80,6 @@ export default function Home() {
     const filteredEvents = events.filter(e => e.id !== eventId);
     saveEvents(filteredEvents);
     setEditingEvent(null);
-  };
-
-  const handleSaveDocument = (document: Document) => {
-    const existingIndex = documents.findIndex(d => d.id === document.id);
-    let newDocuments: Document[];
-    
-    if (existingIndex >= 0) {
-      newDocuments = [...documents];
-      newDocuments[existingIndex] = document;
-    } else {
-      newDocuments = [...documents, document];
-    }
-    
-    saveDocuments(newDocuments);
-  };
-
-  const handleDeleteDocument = (documentId: string) => {
-    const filteredDocuments = documents.filter(d => d.id !== documentId);
-    saveDocuments(filteredDocuments);
   };
 
   const handleDateClick = (date: Date) => {
@@ -153,7 +115,7 @@ export default function Home() {
       <header className="mb-8">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold mb-1">✨ Melikenin Ajandası</h1>
+            <h1 className="text-3xl font-bold mb-1">📅 Ajanda</h1>
             <p className="text-[var(--foreground-secondary)]">
               {new Date().toLocaleDateString('tr-TR', { 
                 weekday: 'long', 
@@ -206,12 +168,6 @@ export default function Home() {
           >
             Liste
           </button>
-          <button 
-            onClick={() => setViewMode('documents')}
-            className={`px-6 py-2 rounded-md font-medium transition-colors whitespace-nowrap ${viewMode === 'documents' ? 'bg-[var(--accent)]' : 'hover:bg-[var(--background-tertiary)]'}`}
-          >
-            Belgelerim
-          </button>
         </div>
 
         {viewMode === 'month' && (
@@ -249,17 +205,8 @@ export default function Home() {
           />
         )}
 
-        {viewMode === 'documents' && (
-          <DocumentsView
-            documents={documents}
-            onSaveDocument={handleSaveDocument}
-            onDeleteDocument={handleDeleteDocument}
-          />
-        )}
-
-        {viewMode !== 'documents' && (
-          <div className="bg-[var(--background-secondary)] rounded-xl p-6 border border-[var(--border)]">
-            <h2 className="text-xl font-semibold mb-4">⏰ Yaklaşan Etkinlikler</h2>
+        <div className="bg-[var(--background-secondary)] rounded-xl p-6 border border-[var(--border)]">
+          <h2 className="text-xl font-semibold mb-4">⏰ Yaklaşan Etkinlikler</h2>
           {getUpcomingEvents().length > 0 ? (
             <div className="space-y-3">
               {getUpcomingEvents().map(event => (
@@ -294,8 +241,7 @@ export default function Home() {
               Henüz yaklaşan etkinlik yok
             </p>
           )}
-          </div>
-        )}
+        </div>
       </main>
 
       <EventModal

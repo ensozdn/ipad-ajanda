@@ -173,13 +173,38 @@ export function useNotifications(events: Event[]) {
 
 // Test bildirimi gönder
 export const sendTestNotification = () => {
-  if (Notification.permission === 'granted') {
-    new Notification('🎉 Test Bildirimi', {
-      body: 'Bildirimler çalışıyor! Artık etkinlik hatırlatmaları alacaksınız.',
-      icon: '/notification-icon.png',
-      requireInteraction: false,
-    });
-    return true;
+  // Notification API yoksa (Safari mobil)
+  if (typeof window === 'undefined' || !('Notification' in window)) {
+    alert('⚠️ Safari mobilde bildirimler desteklenmiyor.\n\n📱 Çözüm: Uygulamayı PWA olarak home screen\'e ekleyin!\n\n1. Safari\'de Share butonuna tıklayın\n2. "Add to Home Screen" seçin\n3. Oradan açtığınızda bildirimler çalışacak!');
+    return false;
   }
-  return false;
+
+  if (Notification.permission !== 'granted') {
+    alert('⚠️ Bildirim izni verilmemiş. Lütfen önce izin verin.');
+    return false;
+  }
+
+  try {
+    const notification = new Notification('🎉 Test Bildirimi', {
+      body: 'Bildirimler çalışıyor! Artık etkinlik hatırlatmaları alacaksınız.',
+      requireInteraction: false,
+      silent: false,
+    });
+
+    // Vibrasyon
+    if ('vibrate' in navigator) {
+      navigator.vibrate([200, 100, 200]);
+    }
+
+    notification.onclick = () => {
+      console.log('Test bildirimine tıklandı');
+      notification.close();
+    };
+
+    return true;
+  } catch (e) {
+    console.error('Bildirim hatası:', e);
+    alert('❌ Bildirim gönderilemedi: ' + e);
+    return false;
+  }
 };

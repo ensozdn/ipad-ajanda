@@ -31,9 +31,17 @@ export default function NotificationSettings({ hasPermission, onRequestPermissio
   };
 
   const handleTestNotification = () => {
+    console.log('Test butonu tıklandı');
+    console.log('Notification API var mı?', 'Notification' in window);
+    console.log('Permission durumu:', typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'N/A');
+    
     const success = sendTestNotification();
+    console.log('Test sonucu:', success);
+    
     if (!success) {
       alert('Bildirim izni verilmemiş. Lütfen önce izin verin.');
+    } else {
+      console.log('Test bildirimi başarıyla gönderildi');
     }
   };
 
@@ -113,6 +121,12 @@ export default function NotificationSettings({ hasPermission, onRequestPermissio
                   <strong>🔕 Kapatma:</strong><br />
                   Etkinlik eklerken/düzenlerken bildirimi kapatabilirsiniz.
                 </p>
+                {permission && (
+                  <p className="text-xs bg-[var(--background-tertiary)] p-3 rounded-lg">
+                    <strong>ℹ️ Bildirimleri tamamen kapatmak için:</strong><br />
+                    Tarayıcı ayarlarından bu sitenin bildirim iznini kaldırın.
+                  </p>
+                )}
               </div>
 
               {/* Butonlar */}
