@@ -130,7 +130,7 @@ export default function DrawingCanvas({ onSave, initialData }: DrawingCanvasProp
   ];
 
   return (
-    <div className="flex flex-col h-full gap-4">
+    <div className="flex flex-col h-[calc(100vh-12rem)] gap-4">
       {/* Araç Çubuğu */}
       <div className="flex flex-wrap items-center gap-4 p-4 bg-[var(--background-secondary)] rounded-lg">
         {/* Araçlar */}
@@ -203,7 +203,7 @@ export default function DrawingCanvas({ onSave, initialData }: DrawingCanvasProp
       </div>
 
       {/* Canvas */}
-      <div className="flex-1 bg-white rounded-lg overflow-hidden shadow-lg">
+      <div className="flex-1 bg-white rounded-lg overflow-hidden shadow-lg min-h-[600px]">
         <canvas
           ref={canvasRef}
           onPointerDown={startDrawing}

@@ -69,7 +69,7 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
   // Çizim modunda
   if (selectedDocument || isCreating) {
     return (
-      <div className="h-full flex flex-col">
+      <div className="h-[calc(100vh-8rem)] flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={handleBack}
