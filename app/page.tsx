@@ -163,16 +163,18 @@ export default function Home() {
               })}
             </p>
           </div>
-          <button 
-            onClick={() => {
-              setSelectedDate(null);
-              setEditingEvent(null);
-              setShowEventModal(true);
-            }}
-            className="px-6 py-3 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors font-medium shadow-lg"
-          >
-            + Yeni Etkinlik
-          </button>
+          {viewMode !== 'documents' && (
+            <button 
+              onClick={() => {
+                setSelectedDate(null);
+                setEditingEvent(null);
+                setShowEventModal(true);
+              }}
+              className="px-6 py-3 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors font-medium shadow-lg"
+            >
+              + Yeni Etkinlik
+            </button>
+          )}
           <NotificationSettings 
             hasPermission={hasPermission}
             onRequestPermission={requestPermission}
@@ -210,7 +212,7 @@ export default function Home() {
             onClick={() => setViewMode('documents')}
             className={`px-6 py-2 rounded-md font-medium transition-colors whitespace-nowrap ${viewMode === 'documents' ? 'bg-[var(--accent)]' : 'hover:bg-[var(--background-tertiary)]'}`}
           >
-            Belgelerim
+            Notlarım
           </button>
         </div>
 

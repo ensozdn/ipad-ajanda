@@ -33,13 +33,6 @@ body {
   box-sizing: border-box;
 }
 
-/* Apple Pencil support */
-canvas {
-  touch-action: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;

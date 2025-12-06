@@ -105,37 +105,31 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Belgelerim</h2>
+        <h2 className="text-2xl font-bold">Notlarım</h2>
         <button
           onClick={handleCreateNew}
           className="px-6 py-3 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors font-medium"
         >
-          + Yeni Belge
+          + Yeni Not
         </button>
       </div>
 
       {documents.length === 0 ? (
         <div className="text-center py-20">
-          <p className="text-[var(--foreground-secondary)] text-lg mb-4">
-            Henüz belge oluşturmadınız
+          <p className="text-[var(--foreground-secondary)] text-lg">
+            Henüz not oluşturmadınız
           </p>
-          <button
-            onClick={handleCreateNew}
-            className="px-6 py-3 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors font-medium"
-          >
-            İlk Belgenizi Oluşturun
-          </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {documents.map((doc) => (
             <div
               key={doc.id}
-              className="bg-[var(--background-secondary)] rounded-lg overflow-hidden border border-[var(--border)] hover:border-[var(--accent)] transition-colors cursor-pointer group"
+              className="bg-[var(--background-secondary)] rounded-lg border border-[var(--border)] hover:border-[var(--accent)] transition-colors cursor-pointer"
             >
               <div
                 onClick={() => handleOpenDocument(doc)}
-                className="aspect-[3/4] bg-white relative overflow-hidden"
+                className="aspect-square bg-white rounded-t-lg overflow-hidden"
               >
                 {doc.imageData ? (
                   <img
@@ -145,15 +139,20 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-400">
-                    Boş Belge
+                    Boş Not
                   </div>
                 )}
               </div>
-              <div className="p-4">
-                <h3 className="font-medium mb-2 truncate">{doc.title}</h3>
-                <div className="flex items-center justify-between text-sm text-[var(--foreground-secondary)]">
+              <div className="p-3">
+                <h3 className="font-medium mb-1 truncate text-sm" onClick={() => handleOpenDocument(doc)}>
+                  {doc.title}
+                </h3>
+                <div className="flex items-center justify-between text-xs text-[var(--foreground-secondary)]">
                   <span>
-                    {new Date(doc.updatedAt).toLocaleDateString('tr-TR')}
+                    {new Date(doc.updatedAt).toLocaleDateString('tr-TR', {
+                      day: 'numeric',
+                      month: 'short'
+                    })}
                   </span>
                   <button
                     onClick={(e) => {
