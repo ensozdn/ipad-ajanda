@@ -10,17 +10,29 @@ interface DocumentsViewProps {
   onDeleteDocument: (id: string) => void;
 }
 
+type BackgroundType = 'plain' | 'lined' | 'grid';
+
 export default function DocumentsView({ documents, onSaveDocument, onDeleteDocument }: DocumentsViewProps) {
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [showBackgroundModal, setShowBackgroundModal] = useState(false);
+  const [selectedBackground, setSelectedBackground] = useState<BackgroundType>('plain');
 
   const handleCreateNew = () => {
+    setShowBackgroundModal(true);
+  };
+
+  const handleBackgroundSelect = (background: BackgroundType) => {
+    setSelectedBackground(background);
+    setShowBackgroundModal(false);
+    
     const newDoc: Document = {
       id: Date.now().toString(),
-      title: 'Yeni Belge',
+      title: 'Yeni Not',
       createdAt: new Date(),
       updatedAt: new Date(),
       imageData: '',
+      background, // Arka plan tipini kaydet
     };
     setSelectedDocument(newDoc);
     setIsCreating(true);
@@ -96,6 +108,7 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
         <DrawingCanvas
           onSave={handleSaveDrawing}
           initialData={selectedDocument?.imageData}
+          initialBackground={selectedDocument?.background || 'plain'}
         />
       </div>
     );
@@ -113,6 +126,46 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
           + Yeni Not
         </button>
       </div>
+
+      {/* Sayfa Türü Seçim Modal */}
+      {showBackgroundModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowBackgroundModal(false)}>
+          <div className="bg-[var(--background-secondary)] rounded-lg p-8 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-xl font-bold mb-6">Sayfa Türünü Seçin</h3>
+            <div className="space-y-3">
+              <button
+                onClick={() => handleBackgroundSelect('plain')}
+                className="w-full p-4 rounded-lg bg-white hover:bg-gray-100 transition-colors text-gray-800 font-medium border-2 border-transparent hover:border-blue-500 flex items-center gap-3"
+              >
+                <div className="w-12 h-12 bg-white border border-gray-300 rounded"></div>
+                <span>Düz Sayfa</span>
+              </button>
+              <button
+                onClick={() => handleBackgroundSelect('lined')}
+                className="w-full p-4 rounded-lg bg-white hover:bg-gray-100 transition-colors text-gray-800 font-medium border-2 border-transparent hover:border-blue-500 flex items-center gap-3"
+              >
+                <div className="w-12 h-12 bg-white border border-gray-300 rounded flex flex-col justify-around p-1">
+                  <div className="h-px bg-gray-300"></div>
+                  <div className="h-px bg-gray-300"></div>
+                  <div className="h-px bg-gray-300"></div>
+                  <div className="h-px bg-gray-300"></div>
+                </div>
+                <span>Çizgili Sayfa</span>
+              </button>
+              <button
+                onClick={() => handleBackgroundSelect('grid')}
+                className="w-full p-4 rounded-lg bg-white hover:bg-gray-100 transition-colors text-gray-800 font-medium border-2 border-transparent hover:border-blue-500 flex items-center gap-3"
+              >
+                <div className="w-12 h-12 bg-white border border-gray-300 rounded" style={{
+                  backgroundImage: 'linear-gradient(#e0e0e0 1px, transparent 1px), linear-gradient(90deg, #e0e0e0 1px, transparent 1px)',
+                  backgroundSize: '8px 8px'
+                }}></div>
+                <span>Kareli Sayfa</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {documents.length === 0 ? (
         <div className="text-center py-20">

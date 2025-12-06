@@ -7,16 +7,23 @@ type BackgroundType = 'plain' | 'lined' | 'grid';
 interface DrawingCanvasProps {
   onSave: (imageData: string) => void;
   initialData?: string;
+  initialBackground?: BackgroundType;
 }
 
-export default function DrawingCanvas({ onSave, initialData }: DrawingCanvasProps) {
+export default function DrawingCanvas({ onSave, initialData, initialBackground = 'plain' }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const backgroundCanvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const lastScaleRef = useRef(1);
+  const initialDistanceRef = useRef(0);
   const [isDrawing, setIsDrawing] = useState(false);
   const [color, setColor] = useState('#000000');
   const [lineWidth, setLineWidth] = useState(2);
   const [tool, setTool] = useState<'pen' | 'eraser'>('pen');
-  const [background, setBackground] = useState<BackgroundType>('plain');
+  const [background, setBackground] = useState<BackgroundType>(initialBackground);
+  const [scale, setScale] = useState(1);
+  const [originX, setOriginX] = useState(50); // Transform origin X (%)
+  const [originY, setOriginY] = useState(50); // Transform origin Y (%)
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -49,6 +56,70 @@ export default function DrawingCanvas({ onSave, initialData }: DrawingCanvasProp
       img.src = initialData;
     }
   }, [initialData]);
+
+  // Pinch-to-zoom handler for canvas container
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const getDistance = (touch1: Touch, touch2: Touch) => {
+      const dx = touch1.clientX - touch2.clientX;
+      const dy = touch1.clientY - touch2.clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        
+        // İki parmağın ortası - zoom merkezi
+        const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        
+        // Container'a göre pozisyon
+        const rect = container.getBoundingClientRect();
+        const relativeX = centerX - rect.left;
+        const relativeY = centerY - rect.top;
+        
+        // Yüzde olarak transform origin
+        const percentX = (relativeX / rect.width) * 100;
+        const percentY = (relativeY / rect.height) * 100;
+        
+        setOriginX(percentX);
+        setOriginY(percentY);
+        
+        initialDistanceRef.current = getDistance(e.touches[0], e.touches[1]);
+        lastScaleRef.current = scale;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const currentDistance = getDistance(e.touches[0], e.touches[1]);
+        const ratio = currentDistance / initialDistanceRef.current;
+        const newScale = lastScaleRef.current * ratio;
+        const clampedScale = Math.min(Math.max(0.5, newScale), 3);
+        setScale(clampedScale);
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length < 2) {
+        lastScaleRef.current = scale;
+      }
+    };
+
+    container.addEventListener('touchstart', handleTouchStart, { passive: false });
+    container.addEventListener('touchmove', handleTouchMove, { passive: false });
+    container.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+    return () => {
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
+      container.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [scale]);
 
   // Touch event listeners ile passive: false
   useEffect(() => {
@@ -330,8 +401,8 @@ export default function DrawingCanvas({ onSave, initialData }: DrawingCanvasProp
             }`}
             title="Silgi"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M16.24 3.56l4.95 4.94c.78.79.78 2.05 0 2.84L12 20.53a4.008 4.008 0 0 1-5.66 0L2.81 17c-.78-.79-.78-2.05 0-2.84l10.6-10.6c.79-.78 2.05-.78 2.83 0M4.22 15.58l3.54 3.53c.78.79 2.04.79 2.83 0l3.53-3.53-6.36-6.36-3.54 3.53c-.78.79-.78 2.05 0 2.83z"/>
             </svg>
           </button>
 
@@ -419,9 +490,17 @@ export default function DrawingCanvas({ onSave, initialData }: DrawingCanvasProp
       </div>
 
       {/* Canvas - Tam ekran, pinch-to-zoom */}
-      <div className="flex-1 overflow-hidden relative bg-white">
-        <div className="absolute inset-0 overflow-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-          <div className="relative" style={{ width: '800px', height: '1000px', margin: '20px auto' }}>
+      <div ref={containerRef} className="flex-1 overflow-auto relative bg-white" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="p-5 flex items-center justify-center min-h-full">
+          <div 
+            className="relative" 
+            style={{ 
+              width: '800px', 
+              height: '1000px',
+              transform: `scale(${scale})`,
+              transformOrigin: `${originX}% ${originY}%`
+            }}
+          >
             {/* Arka plan canvas */}
             <canvas
               ref={backgroundCanvasRef}
