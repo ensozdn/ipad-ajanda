@@ -26,10 +26,18 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-overflow-scrolling: touch;
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* Apple Pencil support */
+canvas {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* Scrollbar styling */

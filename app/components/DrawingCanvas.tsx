@@ -46,12 +46,22 @@ export default function DrawingCanvas({ onSave, initialData }: DrawingCanvasProp
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
+    // Safari'de Apple Pencil için scroll engelleme
+    const preventScroll = (e: Event) => {
+      e.preventDefault();
+    };
+    
+    canvas.addEventListener('touchstart', preventScroll, { passive: false });
+    canvas.addEventListener('touchmove', preventScroll, { passive: false });
+
     return () => {
       window.removeEventListener('resize', resizeCanvas);
+      canvas.removeEventListener('touchstart', preventScroll);
+      canvas.removeEventListener('touchmove', preventScroll);
     };
   }, [initialData]);
 
-  const startDrawing = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  const startDrawing = (e: React.PointerEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -61,8 +71,20 @@ export default function DrawingCanvas({ onSave, initialData }: DrawingCanvasProp
     setIsDrawing(true);
 
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    let x, y, pressure = 0.5;
+
+    if ('touches' in e) {
+      // Touch event
+      const touch = e.touches[0];
+      x = touch.clientX - rect.left;
+      y = touch.clientY - rect.top;
+      pressure = (touch as any).force || 0.5;
+    } else {
+      // Pointer event
+      x = e.clientX - rect.left;
+      y = e.clientY - rect.top;
+      pressure = e.pressure || 0.5;
+    }
 
     ctx.beginPath();
     ctx.moveTo(x, y);
@@ -75,11 +97,11 @@ export default function DrawingCanvas({ onSave, initialData }: DrawingCanvasProp
     } else {
       ctx.globalCompositeOperation = 'source-over';
       ctx.strokeStyle = color;
-      ctx.lineWidth = lineWidth * (e.pressure || 0.5);
+      ctx.lineWidth = lineWidth * (pressure > 0 ? pressure * 2 : 1);
     }
   };
 
-  const draw = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  const draw = (e: React.PointerEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     if (!isDrawing) return;
 
     const canvas = canvasRef.current;
@@ -89,12 +111,24 @@ export default function DrawingCanvas({ onSave, initialData }: DrawingCanvasProp
     if (!ctx) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    let x, y, pressure = 0.5;
+
+    if ('touches' in e) {
+      // Touch event
+      const touch = e.touches[0];
+      x = touch.clientX - rect.left;
+      y = touch.clientY - rect.top;
+      pressure = (touch as any).force || 0.5;
+    } else {
+      // Pointer event
+      x = e.clientX - rect.left;
+      y = e.clientY - rect.top;
+      pressure = e.pressure || 0.5;
+    }
 
     // Apple Pencil basınç desteği
     if (tool === 'pen') {
-      ctx.lineWidth = lineWidth * (e.pressure > 0 ? e.pressure * 2 : 1);
+      ctx.lineWidth = lineWidth * (pressure > 0 ? pressure * 2 : 1);
     }
 
     ctx.lineTo(x, y);
@@ -210,8 +244,16 @@ export default function DrawingCanvas({ onSave, initialData }: DrawingCanvasProp
           onPointerMove={draw}
           onPointerUp={stopDrawing}
           onPointerLeave={stopDrawing}
+          onTouchStart={startDrawing as any}
+          onTouchMove={draw as any}
+          onTouchEnd={stopDrawing}
           className="w-full h-full touch-none"
-          style={{ touchAction: 'none' }}
+          style={{ 
+            touchAction: 'none',
+            WebkitUserSelect: 'none',
+            userSelect: 'none',
+            msTouchAction: 'none'
+          }}
         />
       </div>
     </div>
