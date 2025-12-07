@@ -1029,7 +1029,7 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
     // Canlı renkler
     '#FF1493', '#FF4500', '#32CD32', '#1E90FF', '#9370DB',
     // Fosforlu/Highlighter renkler
-    '#FFFF00', '#00FF00', '#FF69B4', '#00FFFF', '#FF8C00'
+    '#FFFF00', '#FF69B4', '#00FFFF', '#FF8C00', '#FFA500'
   ];
 
   const highlighterColors = [
@@ -1048,116 +1048,124 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
         <div className="flex items-center gap-2">
           {/* Çizim Araçları Grubu */}
           <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+            {/* Normal Kalem - İyi tanımlanmış çizgi */}
             <button
               onClick={() => setTool('pen')}
               className={`p-2 rounded-md transition-all ${
                 tool === 'pen' 
-                  ? 'bg-white text-blue-600 shadow-sm' 
-                  : 'text-gray-600 hover:bg-white/50'
+                  ? 'bg-blue-500 text-white shadow-lg scale-110' 
+                  : 'text-gray-700 hover:bg-white/70 hover:scale-105'
               }`}
-              title="Kalem"
+              title="Normal Kalem (Net çizgiler)"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
             </button>
             
+            {/* Fosforlu Kalem - Yarı saydam fosforlu renk */}
             <button
               onClick={() => setTool('highlighter')}
               className={`p-2 rounded-md transition-all ${
                 tool === 'highlighter' 
-                  ? 'bg-white text-yellow-600 shadow-sm' 
-                  : 'text-gray-600 hover:bg-white/50'
+                  ? 'bg-yellow-400 text-white shadow-lg scale-110' 
+                  : 'text-yellow-500 hover:bg-yellow-100/70 hover:scale-105'
               }`}
-              title="Fosforlu Kalem"
+              title="Fosforlu Kalem (Yarı saydam parlak)"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M18.5 1.15c-.53 0-1.04.21-1.41.59l-8.84 8.84c-.37.37-.59.88-.59 1.41 0 .53.21 1.04.59 1.41l2.83 2.83c.78.78 2.05.78 2.83 0l8.84-8.84c.37-.37.59-.88.59-1.41 0-.53-.21-1.04-.59-1.41l-2.83-2.83c-.37-.38-.88-.59-1.42-.59" opacity="0.7"/>
+                <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V6c0-1.1-.9-2-2-2z" opacity="0.8"/>
               </svg>
             </button>
 
+            {/* Kalın Marker - Çok kalın çizgi */}
             <button
               onClick={() => setTool('marker')}
               className={`p-2 rounded-md transition-all ${
                 tool === 'marker' 
-                  ? 'bg-white text-orange-600 shadow-sm' 
-                  : 'text-gray-600 hover:bg-white/50'
+                  ? 'bg-orange-500 text-white shadow-lg scale-110' 
+                  : 'text-orange-600 hover:bg-orange-100/70 hover:scale-105'
               }`}
-              title="Marker (Kalın)"
+              title="Kalın Marker (Çok kalın, opak)"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <rect x="4" y="2" width="4" height="20" rx="1" fill="currentColor"/>
-                <rect x="10" y="4" width="10" height="2" fill="currentColor"/>
+                <rect x="3" y="2" width="6" height="20" rx="1" fill="currentColor" opacity="0.9"/>
+                <rect x="11" y="5" width="10" height="3" fill="currentColor" opacity="0.9"/>
               </svg>
             </button>
 
+            {/* İnce Kalem - Ince çizgi */}
             <button
               onClick={() => setTool('pencil')}
               className={`p-2 rounded-md transition-all ${
                 tool === 'pencil' 
-                  ? 'bg-white text-yellow-700 shadow-sm' 
-                  : 'text-gray-600 hover:bg-white/50'
+                  ? 'bg-amber-600 text-white shadow-lg scale-110' 
+                  : 'text-amber-700 hover:bg-amber-100/70 hover:scale-105'
               }`}
-              title="Kalem (İnce)"
+              title="İnce Kalem (Çok ince ve doğal)"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 9c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm4 4c-2.66 0-8 1.34-8 4v2h16v-2c0-2.66-5.34-4-8-4z" opacity="0.75"/>
               </svg>
             </button>
 
+            {/* Soft Pastel - Yumuşak, saydam çizgi */}
             <button
               onClick={() => setTool('crayon')}
               className={`p-2 rounded-md transition-all ${
                 tool === 'crayon' 
-                  ? 'bg-white text-red-600 shadow-sm' 
-                  : 'text-gray-600 hover:bg-white/50'
+                  ? 'bg-red-500 text-white shadow-lg scale-110' 
+                  : 'text-red-500 hover:bg-red-100/70 hover:scale-105'
               }`}
-              title="Pastel (Soft)"
+              title="Soft Pastel (Yumuşak, yarı saydam)"
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" opacity="0.6"/>
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" opacity="0.7">
+                <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
               </svg>
             </button>
             
+            {/* Silgi - Çizgileri siler */}
             <button
               onClick={() => setTool('eraser')}
               className={`p-2 rounded-md transition-all ${
                 tool === 'eraser' 
-                  ? 'bg-white text-blue-600 shadow-sm' 
-                  : 'text-gray-600 hover:bg-white/50'
+                  ? 'bg-purple-600 text-white shadow-lg scale-110' 
+                  : 'text-purple-700 hover:bg-purple-100/70 hover:scale-105'
               }`}
-              title="Silgi"
+              title="Silgi (Çizgileri siler)"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M16.24 3.56l4.95 4.94c.78.79.78 2.05 0 2.84L12 20.53a4.008 4.008 0 0 1-5.66 0L2.81 17c-.78-.79-.78-2.05 0-2.84l10.6-10.6c.79-.78 2.05-.78 2.83 0"/>
+                <path d="M16.24 3.56L7.51 12.3c-.48.48-.48 1.26 0 1.74l8.96 8.96c.48.48 1.26.48 1.74 0l8.96-8.96c.48-.48.48-1.26 0-1.74L17.98 3.56c-.48-.48-1.26-.48-1.74 0zM12 19.94L6.06 14v-2.81L12.81 4.35 17.66 9.2 12 19.94z"/>
               </svg>
             </button>
             
+            {/* Metin Aracı - Yazı ekle */}
             <button
               onClick={() => setTool('text')}
               className={`p-2 rounded-md transition-all ${
                 tool === 'text' 
-                  ? 'bg-white text-blue-600 shadow-sm' 
-                  : 'text-gray-600 hover:bg-white/50'
+                  ? 'bg-green-600 text-white shadow-lg scale-110' 
+                  : 'text-green-700 hover:bg-green-100/70 hover:scale-105'
               }`}
-              title="Metin (yazıyı silmek için Silgi aracını kullanın)"
+              title="Metin (Yazı ekle)"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M5 3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5zm0 2h14v14H5V5zm3 2v2h8V7H8zm0 3v2h8v-2H8zm0 3v2h5v-2H8z"/>
               </svg>
             </button>
             
+            {/* Fotoğraf Aracı - Resim ekle */}
             <button
               onClick={() => fileInputRef.current?.click()}
               className={`p-2 rounded-md transition-all ${
                 tool === 'image' 
-                  ? 'bg-white text-blue-600 shadow-sm' 
-                  : 'text-gray-600 hover:bg-white/50'
+                  ? 'bg-indigo-600 text-white shadow-lg scale-110' 
+                  : 'text-indigo-700 hover:bg-indigo-100/70 hover:scale-105'
               }`}
               title="Fotoğraf Ekle"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
               </svg>
             </button>
           </div>
