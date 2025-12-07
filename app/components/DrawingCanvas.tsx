@@ -1398,15 +1398,15 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
       {textInput !== null && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setTextInput(null)}>
           <div className="bg-white rounded-xl shadow-2xl p-6 w-96 max-w-[90%]" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold mb-4">Metin Ekle</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Metin Ekle</h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Metin</label>
+                <label className="block text-sm font-bold text-gray-900 mb-2">Metin</label>
                 <textarea
                   value={textInput.text}
                   onChange={(e) => setTextInput({ ...textInput, text: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 font-medium"
                   rows={3}
                   placeholder="Metni buraya yazın..."
                   autoFocus
@@ -1415,19 +1415,19 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Yazı Boyutu</label>
+                  <label className="block text-sm font-bold text-gray-900 mb-2">Yazı Boyutu</label>
                   <input
                     type="number"
                     value={fontSize}
                     onChange={(e) => setFontSize(Number(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 font-medium"
                     min="8"
                     max="72"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Yazı Tipi</label>
+                  <label className="block text-sm font-bold text-gray-900 mb-2">Yazı Tipi</label>
                   <select
                     value={fontFamily}
                     onChange={(e) => setFontFamily(e.target.value)}
@@ -1445,13 +1445,13 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
               <div className="flex gap-2 mt-6">
                 <button
                   onClick={() => setTextInput(null)}
-                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2 rounded-lg border border-gray-900 text-gray-900 hover:bg-gray-100 transition-colors font-semibold"
                 >
                   İptal
                 </button>
                 <button
                   onClick={handleTextSubmit}
-                  className="flex-1 px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                  className="flex-1 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors font-bold"
                 >
                   Ekle
                 </button>
