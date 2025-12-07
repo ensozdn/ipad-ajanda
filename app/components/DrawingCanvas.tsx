@@ -1161,7 +1161,8 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
       saveToHistory();
     }
     setTextInput(null);
-    setSelectedTextIndex(null);
+    // Yeni eklenmiş yazıyı seç (hemen sürüklemek için)
+    setSelectedTextIndex(placedTexts.length);
     // Text tool'u otomatik seç (sürükleme için hazır)
     setTool('text');
   };
