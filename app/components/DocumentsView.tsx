@@ -12,12 +12,25 @@ interface DocumentsViewProps {
 
 type BackgroundType = 'plain' | 'lined' | 'grid';
 
+// Default kategoriler
+const DEFAULT_CATEGORIES: Category[] = [
+  { id: 'all', name: 'Tümü', color: '#6366f1', icon: '📚' },
+  { id: 'work', name: 'İş', color: '#3b82f6', icon: '💼' },
+  { id: 'personal', name: 'Kişisel', color: '#10b981', icon: '✨' },
+  { id: 'school', name: 'Okul', color: '#f59e0b', icon: '🎓' },
+  { id: 'ideas', name: 'Fikirler', color: '#ec4899', icon: '💡' },
+  { id: 'shopping', name: 'Alışveriş', color: '#8b5cf6', icon: '🛒' },
+  { id: 'travel', name: 'Seyahat', color: '#06b6d4', icon: '✈️' },
+];
+
 export default function DocumentsView({ documents, onSaveDocument, onDeleteDocument }: DocumentsViewProps) {
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [showBackgroundModal, setShowBackgroundModal] = useState(false);
   const [selectedBackground, setSelectedBackground] = useState<BackgroundType>('plain');
   const [filterMode, setFilterMode] = useState<'all' | 'favorites'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
 
   const handleCreateNew = () => {
     setShowBackgroundModal(true);
@@ -78,6 +91,18 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
     onSaveDocument(updatedDoc);
   };
 
+  const handleCategoryChange = (categoryId: string) => {
+    if (!selectedDocument) return;
+    const updatedDoc = {
+      ...selectedDocument,
+      category: categoryId === 'all' ? undefined : categoryId,
+      updatedAt: new Date(),
+    };
+    setSelectedDocument(updatedDoc);
+    onSaveDocument(updatedDoc);
+    setShowCategoryModal(false);
+  };
+
   const handleBack = () => {
     if (isCreating && !selectedDocument?.imageData) {
       // Yeni belge oluşturulurken geri dönülürse kaydetme
@@ -90,14 +115,31 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
   };
 
   // Filtrelenmiş notları al
-  const filteredDocuments = filterMode === 'favorites' 
-    ? documents.filter(doc => doc.isFavorite)
-    : documents;
+  const filteredDocuments = documents.filter(doc => {
+    // Favori filtresi
+    if (filterMode === 'favorites' && !doc.isFavorite) return false;
+    
+    // Kategori filtresi
+    if (selectedCategory !== 'all') {
+      if (!doc.category && selectedCategory !== 'all') return false;
+      if (doc.category !== selectedCategory) return false;
+    }
+    
+    return true;
+  });
 
   const favoriteCount = documents.filter(doc => doc.isFavorite).length;
 
+  // Her kategorideki not sayısını hesapla
+  const getCategoryCount = (categoryId: string) => {
+    if (categoryId === 'all') return documents.length;
+    return documents.filter(doc => doc.category === categoryId).length;
+  };
+
   // Çizim modunda
   if (selectedDocument || isCreating) {
+    const currentCategory = DEFAULT_CATEGORIES.find(cat => cat.id === selectedDocument?.category) || DEFAULT_CATEGORIES[0];
+    
     return (
       <div className="h-[calc(100vh-8rem)] flex flex-col">
         <div className="flex items-center justify-between mb-4">
@@ -107,22 +149,68 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
           >
             ← Geri
           </button>
-          <input
-            type="text"
-            value={selectedDocument?.title || 'Yeni Not'}
-            onChange={(e) => {
-              if (selectedDocument) {
-                setSelectedDocument({
-                  ...selectedDocument,
-                  title: e.target.value,
-                });
-              }
-            }}
-            placeholder="Not başlığı"
-            className="px-4 py-2 bg-[var(--background-secondary)] rounded-lg border border-[var(--border)] focus:outline-none focus:border-[var(--accent)] text-center font-medium"
-          />
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowCategoryModal(true)}
+              className="px-3 py-2 rounded-lg bg-[var(--background-secondary)] hover:bg-[var(--background-tertiary)] transition-colors flex items-center gap-2"
+              title="Kategori değiştir"
+            >
+              <span className="text-lg">{currentCategory.icon}</span>
+              <span className="text-sm">{currentCategory.name}</span>
+            </button>
+            <input
+              type="text"
+              value={selectedDocument?.title || 'Yeni Not'}
+              onChange={(e) => {
+                if (selectedDocument) {
+                  setSelectedDocument({
+                    ...selectedDocument,
+                    title: e.target.value,
+                  });
+                }
+              }}
+              placeholder="Not başlığı"
+              className="px-4 py-2 bg-[var(--background-secondary)] rounded-lg border border-[var(--border)] focus:outline-none focus:border-[var(--accent)] text-center font-medium"
+            />
+          </div>
           <div className="w-20"></div>
         </div>
+
+        {/* Kategori Seçim Modal */}
+        {showCategoryModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowCategoryModal(false)}>
+            <div className="bg-[var(--background-secondary)] rounded-lg p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-xl font-bold mb-4">Kategori Seçin</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {DEFAULT_CATEGORIES.slice(1).map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => handleCategoryChange(category.id)}
+                    className={`p-4 rounded-lg transition-all flex items-center gap-3 ${
+                      selectedDocument?.category === category.id
+                        ? 'ring-2 ring-offset-2 scale-105'
+                        : 'hover:scale-105'
+                    }`}
+                    style={{
+                      backgroundColor: category.color + '20',
+                      borderColor: category.color,
+                      borderWidth: selectedDocument?.category === category.id ? '2px' : '1px',
+                    }}
+                  >
+                    <span className="text-2xl">{category.icon}</span>
+                    <span className="font-medium">{category.name}</span>
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => handleCategoryChange('all')}
+                className="w-full mt-3 p-3 rounded-lg bg-[var(--background-tertiary)] hover:bg-[var(--background-hover)] transition-colors"
+              >
+                Kategorisiz
+              </button>
+            </div>
+          </div>
+        )}
 
         <DrawingCanvas
           onSave={handleSaveDrawing}
@@ -147,7 +235,7 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         <button
           onClick={() => setFilterMode('all')}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -171,6 +259,35 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
           </svg>
           Favorilerim ({favoriteCount})
         </button>
+      </div>
+
+      {/* Kategori Filtreleri */}
+      <div className="flex gap-2 flex-wrap">
+        {DEFAULT_CATEGORIES.map((category) => {
+          const count = getCategoryCount(category.id);
+          if (count === 0 && category.id !== 'all') return null;
+          
+          return (
+            <button
+              key={category.id}
+              onClick={() => setSelectedCategory(category.id)}
+              className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                selectedCategory === category.id
+                  ? 'scale-105 shadow-lg text-white'
+                  : 'bg-[var(--background-secondary)] hover:bg-[var(--background-tertiary)]'
+              }`}
+              style={{
+                backgroundColor: selectedCategory === category.id ? category.color : undefined,
+              }}
+            >
+              <span className="text-lg">{category.icon}</span>
+              <span>{category.name}</span>
+              <span className={`text-sm ${selectedCategory === category.id ? 'opacity-90' : 'opacity-60'}`}>
+                ({count})
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Sayfa Türü Seçim Modal */}
@@ -267,21 +384,31 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
                 </button>
               </div>
               <div className="p-3">
-                <input
-                  type="text"
-                  value={doc.title}
-                  onChange={(e) => {
-                    const updatedDoc = {
-                      ...doc,
-                      title: e.target.value,
-                      updatedAt: new Date(),
-                    };
-                    onSaveDocument(updatedDoc);
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  placeholder="Not başlığı"
-                  className="w-full font-medium mb-1 text-sm bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-[var(--accent)] rounded px-1"
-                />
+                <div className="flex items-center gap-2 mb-1">
+                  <input
+                    type="text"
+                    value={doc.title}
+                    onChange={(e) => {
+                      const updatedDoc = {
+                        ...doc,
+                        title: e.target.value,
+                        updatedAt: new Date(),
+                      };
+                      onSaveDocument(updatedDoc);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    placeholder="Not başlığı"
+                    className="flex-1 font-medium text-sm bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-[var(--accent)] rounded px-1"
+                  />
+                  {doc.category && (
+                    <span 
+                      className="text-lg flex-shrink-0"
+                      title={DEFAULT_CATEGORIES.find(c => c.id === doc.category)?.name}
+                    >
+                      {DEFAULT_CATEGORIES.find(c => c.id === doc.category)?.icon}
+                    </span>
+                  )}
+                </div>
                 <div className="flex items-center justify-between text-xs text-[var(--foreground-secondary)]">
                   <span>
                     {new Date(doc.updatedAt).toLocaleDateString('tr-TR', {
