@@ -1114,6 +1114,8 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
     }
     setTextInput(null);
     setSelectedTextIndex(null);
+    // Text tool'u otomatik seç (sürükleme için hazır)
+    setTool('text');
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
