@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Document } from '../types';
+import { Document, Category } from '../types';
 import DrawingCanvas from './DrawingCanvas';
 
 interface DocumentsViewProps {

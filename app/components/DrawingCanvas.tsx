@@ -470,6 +470,53 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
     onSave(imageData);
   };
 
+  const exportAsPNG = () => {
+    const canvas = canvasRef.current;
+    const bgCanvas = backgroundCanvasRef.current;
+    if (!canvas || !bgCanvas) return;
+
+    // Geçici canvas oluştur - arka plan + çizim birleştir
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    if (!tempCtx) return;
+
+    // Önce arka planı çiz
+    tempCtx.drawImage(bgCanvas, 0, 0);
+    // Sonra çizimi üzerine ekle
+    tempCtx.drawImage(canvas, 0, 0);
+
+    // PNG olarak indir
+    const imageData = tempCanvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.href = imageData;
+    link.download = `not_${new Date().getTime()}.png`;
+    link.click();
+  };
+
+  const exportAsPDF = async () => {
+    const canvas = canvasRef.current;
+    const bgCanvas = backgroundCanvasRef.current;
+    if (!canvas || !bgCanvas) return;
+
+    // jsPDF kütüphanesi olmadan basit bir çözüm
+    // Canvas'ı PNG olarak PDF'e dönüştürme
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    if (!tempCtx) return;
+
+    tempCtx.drawImage(bgCanvas, 0, 0);
+    tempCtx.drawImage(canvas, 0, 0);
+
+    // Şimdilik PNG olarak indir, PDF için jsPDF kütüphanesi gerekli
+    // TODO: jsPDF eklenebilir
+    alert('PDF export özelliği yakında eklenecek! Şimdilik PNG olarak indiriliyor.');
+    exportAsPNG();
+  };
+
   const colors = [
     // Temel renkler
     '#000000', '#FFFFFF', '#FF0000', '#00FF00', '#0000FF',
@@ -693,6 +740,16 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
             className="px-4 py-1.5 text-sm rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
           >
             Temizle
+          </button>
+          <button
+            onClick={exportAsPNG}
+            className="px-4 py-1.5 text-sm rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors flex items-center gap-1"
+            title="PNG olarak indir"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            PNG
           </button>
           <button
             onClick={handleSave}

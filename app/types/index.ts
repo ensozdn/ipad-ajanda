@@ -21,4 +21,12 @@ export interface Document {
   imageData: string; // base64 encoded canvas data
   background?: 'plain' | 'lined' | 'grid'; // Sayfa türü
   isFavorite?: boolean; // Favori mi?
+  category?: string; // Kategori/Klasör
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  color: string;
+  icon?: string;
 }
