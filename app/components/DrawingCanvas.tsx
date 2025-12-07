@@ -19,11 +19,12 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   const [isDrawing, setIsDrawing] = useState(false);
   const [color, setColor] = useState('#000000');
   const [lineWidth, setLineWidth] = useState(2);
-  const [tool, setTool] = useState<'pen' | 'eraser'>('pen');
+  const [tool, setTool] = useState<'pen' | 'eraser' | 'highlighter'>('pen');
   const [background, setBackground] = useState<BackgroundType>(initialBackground);
   const [scale, setScale] = useState(1);
   const [originX, setOriginX] = useState(50); // Transform origin X (%)
   const [originY, setOriginY] = useState(50); // Transform origin Y (%)
+  const [showColorPicker, setShowColorPicker] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -269,8 +270,14 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
     if (tool === 'eraser') {
       ctx.globalCompositeOperation = 'destination-out';
       ctx.lineWidth = lineWidth * 3;
+    } else if (tool === 'highlighter') {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = color;
+      ctx.globalAlpha = 0.3; // Yarı saydam
+      ctx.lineWidth = lineWidth * 4; // Daha kalın
     } else {
       ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1.0;
       ctx.strokeStyle = color;
       ctx.lineWidth = lineWidth * (pressure > 0 ? pressure * 2 : 1);
     }
@@ -326,6 +333,9 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
     // Apple Pencil basınç desteği
     if (tool === 'pen') {
       ctx.lineWidth = lineWidth * (pressure > 0 ? pressure * 2 : 1);
+    } else if (tool === 'highlighter') {
+      ctx.globalAlpha = 0.3;
+      ctx.lineWidth = lineWidth * 4;
     }
 
     ctx.lineTo(x, y);
@@ -368,8 +378,22 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   };
 
   const colors = [
-    '#000000', '#FF0000', '#0000FF', '#00FF00', 
-    '#FFFF00', '#FF00FF', '#00FFFF', '#FFA500'
+    // Temel renkler
+    '#000000', '#FFFFFF', '#FF0000', '#00FF00', '#0000FF',
+    // Pastel tonlar
+    '#FFB6C1', '#FFD700', '#98FB98', '#87CEEB', '#DDA0DD',
+    // Canlı renkler
+    '#FF1493', '#FF4500', '#32CD32', '#1E90FF', '#9370DB',
+    // Fosforlu/Highlighter renkler
+    '#FFFF00', '#00FF00', '#FF69B4', '#00FFFF', '#FF8C00'
+  ];
+
+  const highlighterColors = [
+    '#FFFF00', // Sarı
+    '#00FF00', // Yeşil
+    '#FF69B4', // Pembe
+    '#00FFFF', // Cyan
+    '#FF8C00', // Turuncu
   ];
 
   return (
@@ -378,7 +402,7 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
       <div className="flex items-center justify-between bg-white border-b border-gray-200 px-4 py-2 shadow-sm">
         {/* Sol taraf - Araçlar */}
         <div className="flex items-center gap-3">
-          {/* Kalem/Silgi */}
+          {/* Kalem/Silgi/Highlighter */}
           <button
             onClick={() => setTool('pen')}
             className={`p-2 rounded-lg transition-colors ${
@@ -392,6 +416,21 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
             </svg>
           </button>
+          
+          <button
+            onClick={() => setTool('highlighter')}
+            className={`p-2 rounded-lg transition-colors ${
+              tool === 'highlighter' 
+                ? 'bg-yellow-100 text-yellow-600' 
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+            title="Fosforlu Kalem"
+          >
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M18.5 1.15c-.53 0-1.04.21-1.41.59l-8.84 8.84c-.37.37-.59.88-.59 1.41 0 .53.21 1.04.59 1.41l2.83 2.83c.78.78 2.05.78 2.83 0l8.84-8.84c.37-.37.59-.88.59-1.41 0-.53-.21-1.04-.59-1.41l-2.83-2.83c-.37-.38-.88-.59-1.42-.59M7 14l-5 2 3 3 2-5m12.5-11.85c.4 0 .77.16 1.06.44l2.83 2.83c.28.29.44.66.44 1.06 0 .4-.16.77-.44 1.06l-8.84 8.84c-.58.58-1.54.58-2.12 0L9.6 13.55c-.28-.29-.44-.66-.44-1.06 0-.4.16-.77.44-1.06l8.84-8.84c.29-.28.66-.44 1.06-.44z" opacity="0.5"/>
+            </svg>
+          </button>
+          
           <button
             onClick={() => setTool('eraser')}
             className={`p-2 rounded-lg transition-colors ${
@@ -409,32 +448,81 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
           <div className="w-px h-6 bg-gray-300" />
 
           {/* Renkler */}
-          <div className="flex gap-1">
-            {colors.map((c) => (
+          <div className="flex gap-1 items-center">
+            {/* Aktif renk göstergesi */}
+            <div 
+              className="w-8 h-8 rounded-full border-2 border-gray-400 shadow-sm cursor-pointer"
+              style={{ backgroundColor: color }}
+              onClick={() => setShowColorPicker(!showColorPicker)}
+              title="Renk Seçici"
+            />
+            
+            {/* Renk paleti */}
+            {(tool === 'highlighter' ? highlighterColors : colors.slice(0, 10)).map((c) => (
               <button
                 key={c}
                 onClick={() => setColor(c)}
-                className={`w-7 h-7 rounded-full border-2 transition-all ${
+                className={`w-6 h-6 rounded-full border-2 transition-all ${
                   color === c ? 'border-blue-500 scale-110' : 'border-gray-300'
                 }`}
                 style={{ backgroundColor: c }}
+                title={c}
               />
             ))}
+            
+            {/* Custom renk seçici */}
+            {showColorPicker && (
+              <div className="absolute top-14 left-36 bg-white p-3 rounded-lg shadow-xl border z-50">
+                <div className="flex flex-col gap-2">
+                  <input
+                    type="color"
+                    value={color}
+                    onChange={(e) => setColor(e.target.value)}
+                    className="w-32 h-32 cursor-pointer"
+                  />
+                  <button
+                    onClick={() => setShowColorPicker(false)}
+                    className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    Tamam
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="w-px h-6 bg-gray-300" />
 
-          {/* Kalınlık */}
-          <div className="flex items-center gap-2">
-            <input
-              type="range"
-              min="1"
-              max="10"
-              value={lineWidth}
-              onChange={(e) => setLineWidth(Number(e.target.value))}
-              className="w-20"
-            />
-            <span className="text-sm text-gray-600 w-6">{lineWidth}</span>
+          {/* Kalınlık - Görsel önizleme ile */}
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col items-center gap-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500">İnce</span>
+                <input
+                  type="range"
+                  min="1"
+                  max="20"
+                  value={lineWidth}
+                  onChange={(e) => setLineWidth(Number(e.target.value))}
+                  className="w-24"
+                />
+                <span className="text-xs text-gray-500">Kalın</span>
+              </div>
+              {/* Kalınlık önizlemesi */}
+              <div className="flex items-center justify-center h-6">
+                <div
+                  className="rounded-full"
+                  style={{
+                    width: `${lineWidth * 2}px`,
+                    height: `${lineWidth * 2}px`,
+                    backgroundColor: tool === 'eraser' ? '#e5e7eb' : color,
+                    opacity: tool === 'highlighter' ? 0.5 : 1,
+                    maxWidth: '40px',
+                    maxHeight: '40px'
+                  }}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
