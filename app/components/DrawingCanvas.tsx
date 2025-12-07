@@ -781,6 +781,7 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
     if (isDraggingText) {
       setIsDraggingText(false);
       setTextDragStartPos(null);
+      setSelectedTextIndex(null); // Seçimi kaldır, border kalsın
       setIsDrawing(false); // Çizim modunu kapat
       saveToHistory();
       return;
@@ -789,6 +790,7 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
     if (isDraggingImage) {
       setIsDraggingImage(false);
       setDragStartPos(null);
+      setSelectedPlacedImage(null); // Seçimi kaldır, border kalsın
       setIsDrawing(false); // Çizim modunu kapat
       saveToHistory();
       return;
