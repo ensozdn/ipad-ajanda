@@ -964,7 +964,7 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
                   ? 'bg-white text-blue-600 shadow-sm' 
                   : 'text-gray-600 hover:bg-white/50'
               }`}
-              title="Metin"
+              title="Metin (yazıyı silmek için Silgi aracını kullanın)"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
@@ -1456,7 +1456,7 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
                   <select
                     value={fontFamily}
                     onChange={(e) => setFontFamily(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 font-medium"
                   >
                     <option value="Arial">Arial</option>
                     <option value="Times New Roman">Times New Roman</option>
@@ -1465,6 +1465,12 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
                     <option value="Verdana">Verdana</option>
                   </select>
                 </div>
+              </div>
+
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-xs text-gray-700">
+                  <span className="font-bold">İpucu:</span> Yazıyı ekledikten sonra silmek için <span className="font-semibold text-blue-600">Silgi</span> aracını seçin veya <span className="font-semibold text-blue-600">Geri Al</span> butonuna basın.
+                </p>
               </div>
 
               <div className="flex gap-2 mt-6">
