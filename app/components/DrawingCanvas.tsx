@@ -26,6 +26,10 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   const [originY, setOriginY] = useState(50); // Transform origin Y (%)
   const [showColorPicker, setShowColorPicker] = useState(false);
   
+  // Şekil özellikleri
+  const [fillShape, setFillShape] = useState(false); // Dolu/boş şekil
+  const [lineStyle, setLineStyle] = useState<'solid' | 'dashed' | 'dotted'>('solid'); // Çizgi stili
+  
   // Şekil çizimi için
   const [startPoint, setStartPoint] = useState<{ x: number; y: number } | null>(null);
   const [currentShape, setCurrentShape] = useState<ImageData | null>(null);
@@ -419,6 +423,15 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
     x2: number,
     y2: number
   ) => {
+    // Çizgi stilini ayarla
+    if (lineStyle === 'dashed') {
+      ctx.setLineDash([10, 5]); // 10px çizgi, 5px boşluk
+    } else if (lineStyle === 'dotted') {
+      ctx.setLineDash([2, 5]); // 2px nokta, 5px boşluk
+    } else {
+      ctx.setLineDash([]); // Düz çizgi
+    }
+
     ctx.beginPath();
 
     if (shapeType === 'line') {
@@ -430,6 +443,10 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
       // Dikdörtgen
       const width = x2 - x1;
       const height = y2 - y1;
+      if (fillShape) {
+        ctx.fillStyle = color;
+        ctx.fillRect(x1, y1, width, height);
+      }
       ctx.strokeRect(x1, y1, width, height);
     } else if (shapeType === 'circle') {
       // Daire (elips)
@@ -438,6 +455,10 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
       const centerX = x1 + (x2 - x1) / 2;
       const centerY = y1 + (y2 - y1) / 2;
       ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
+      if (fillShape) {
+        ctx.fillStyle = color;
+        ctx.fill();
+      }
       ctx.stroke();
     } else if (shapeType === 'arrow') {
       // Ok
@@ -467,6 +488,9 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
       );
       ctx.stroke();
     }
+
+    // LineDash'i resetle
+    ctx.setLineDash([]);
   };
 
   const saveToHistory = () => {
@@ -777,6 +801,73 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
           </button>
 
           <div className="w-px h-6 bg-gray-300" />
+
+          {/* Şekil özellikleri (sadece şekil araçları aktifken) */}
+          {['line', 'rectangle', 'circle', 'arrow'].includes(tool) && (
+            <>
+              {/* Dolu/Boş (dikdörtgen ve daire için) */}
+              {['rectangle', 'circle'].includes(tool) && (
+                <button
+                  onClick={() => setFillShape(!fillShape)}
+                  className={`p-2 rounded-lg transition-colors ${
+                    fillShape
+                      ? 'bg-blue-100 text-blue-600'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                  title={fillShape ? 'Boş Şekil' : 'Dolu Şekil'}
+                >
+                  <svg className="w-6 h-6" fill={fillShape ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="4" y="4" width="16" height="16" strokeWidth={2} />
+                  </svg>
+                </button>
+              )}
+
+              {/* Çizgi Stili */}
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setLineStyle('solid')}
+                  className={`px-3 py-2 rounded-lg transition-colors ${
+                    lineStyle === 'solid'
+                      ? 'bg-blue-100 text-blue-600'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                  title="Düz Çizgi"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <line x1="4" y1="12" x2="20" y2="12" strokeWidth={2} />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setLineStyle('dashed')}
+                  className={`px-3 py-2 rounded-lg transition-colors ${
+                    lineStyle === 'dashed'
+                      ? 'bg-blue-100 text-blue-600'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                  title="Kesikli Çizgi"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <line x1="4" y1="12" x2="20" y2="12" strokeWidth={2} strokeDasharray="4 2" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setLineStyle('dotted')}
+                  className={`px-3 py-2 rounded-lg transition-colors ${
+                    lineStyle === 'dotted'
+                      ? 'bg-blue-100 text-blue-600'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                  title="Noktalı Çizgi"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <line x1="4" y1="12" x2="20" y2="12" strokeWidth={2} strokeDasharray="1 3" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="w-px h-6 bg-gray-300" />
+            </>
+          )}
 
           {/* Undo/Redo */}
           <button
