@@ -791,39 +791,39 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
               <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 p-2 z-50 min-w-[200px]">
                 <button
                   onClick={() => { setTool('line'); setShowShapeMenu(false); }}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-gray-100 transition-colors"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 20 L20 4" />
                   </svg>
-                  <span>Çizgi</span>
+                  <span className="font-semibold text-gray-800">Çizgi</span>
                 </button>
                 <button
                   onClick={() => { setTool('rectangle'); setShowShapeMenu(false); }}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-gray-100 transition-colors"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <rect x="3" y="5" width="18" height="14" strokeWidth={2} />
                   </svg>
-                  <span>Dikdörtgen</span>
+                  <span className="font-semibold text-gray-800">Dikdörtgen</span>
                 </button>
                 <button
                   onClick={() => { setTool('circle'); setShowShapeMenu(false); }}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-gray-100 transition-colors"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="9" strokeWidth={2} />
                   </svg>
-                  <span>Daire</span>
+                  <span className="font-semibold text-gray-800">Daire</span>
                 </button>
                 <button
                   onClick={() => { setTool('arrow'); setShowShapeMenu(false); }}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-gray-100 transition-colors"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
-                  <span>Ok</span>
+                  <span className="font-semibold text-gray-800">Ok</span>
                 </button>
 
                 {/* Şekil Özellikleri */}
@@ -832,19 +832,19 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
                     <div className="h-px bg-gray-200 my-2"></div>
                     <button
                       onClick={() => setFillShape(!fillShape)}
-                      className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-gray-100 transition-colors"
                     >
-                      <svg className="w-5 h-5" fill={fillShape ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-gray-700" fill={fillShape ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
                         <rect x="4" y="4" width="16" height="16" strokeWidth={2} />
                       </svg>
-                      <span>{fillShape ? 'Boş Şekil' : 'Dolu Şekil'}</span>
+                      <span className="font-semibold text-gray-800">{fillShape ? 'Boş Şekil' : 'Dolu Şekil'}</span>
                     </button>
                   </>
                 )}
 
                 {/* Çizgi Stili */}
                 <div className="h-px bg-gray-200 my-2"></div>
-                <div className="px-2 py-1 text-xs text-gray-500 font-medium">Çizgi Stili</div>
+                <div className="px-2 py-1 text-xs text-gray-600 font-bold uppercase tracking-wide">Çizgi Stili</div>
                 <div className="flex gap-1 p-1">
                   <button
                     onClick={() => setLineStyle('solid')}
