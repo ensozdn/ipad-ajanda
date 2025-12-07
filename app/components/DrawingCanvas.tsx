@@ -31,8 +31,8 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   const [tool, setTool] = useState<'pen' | 'eraser' | 'highlighter' | 'marker' | 'pencil' | 'crayon' | 'line' | 'rectangle' | 'circle' | 'arrow' | 'text' | 'image'>('pen');
   const [background, setBackground] = useState<BackgroundType>(initialBackground);
   const [scale, setScale] = useState(1);
-  const [originX, setOriginX] = useState(50); // Transform origin X (%)
-  const [originY, setOriginY] = useState(50); // Transform origin Y (%)
+  const [panX, setPanX] = useState(0); // Pan X position
+  const [panY, setPanY] = useState(0); // Pan Y position
   const [showColorPicker, setShowColorPicker] = useState(false);
   
   // Çoklu sayfa
@@ -166,10 +166,14 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
     });
   }, [placedTexts, placedImages, selectedTextIndex, selectedPlacedImage]);
 
-  // Pinch-to-zoom handler for canvas container
+  // Çok yavaş pinch-to-zoom - iPad optimized
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+
+    let initialScale = 1;
+    let initialDistance = 0;
+    let isZooming = false;
 
     const getDistance = (touch1: Touch, touch2: Touch) => {
       const dx = touch1.clientX - touch2.clientX;
@@ -180,42 +184,33 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 2) {
         e.preventDefault();
-        
-        // İki parmağın ortası - zoom merkezi
-        const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-        const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-        
-        // Container'a göre pozisyon
-        const rect = container.getBoundingClientRect();
-        const relativeX = centerX - rect.left;
-        const relativeY = centerY - rect.top;
-        
-        // Yüzde olarak transform origin
-        const percentX = (relativeX / rect.width) * 100;
-        const percentY = (relativeY / rect.height) * 100;
-        
-        setOriginX(percentX);
-        setOriginY(percentY);
-        
-        initialDistanceRef.current = getDistance(e.touches[0], e.touches[1]);
-        lastScaleRef.current = scale;
+        isZooming = true;
+        initialScale = scale;
+        initialDistance = getDistance(e.touches[0], e.touches[1]);
       }
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length === 2) {
+      if (e.touches.length === 2 && isZooming) {
         e.preventDefault();
+        
         const currentDistance = getDistance(e.touches[0], e.touches[1]);
-        const ratio = currentDistance / initialDistanceRef.current;
-        const newScale = lastScaleRef.current * ratio;
-        const clampedScale = Math.min(Math.max(0.5, newScale), 3);
+        const distanceChange = currentDistance - initialDistance;
+        
+        // Mini artış - 0.006'dan 0.007'ye
+        const zoomSensitivity = 0.007; // Sadece +0.001 artış
+        const scaleChange = distanceChange * zoomSensitivity;
+        
+        const newScale = initialScale + scaleChange;
+        const clampedScale = Math.min(Math.max(0.7, newScale), 2); // 0.7x - 2x arası
+        
         setScale(clampedScale);
       }
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
       if (e.touches.length < 2) {
-        lastScaleRef.current = scale;
+        isZooming = false;
       }
     };
 
@@ -1348,10 +1343,11 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
 
   return (
     <div className="fixed inset-0 flex flex-col bg-[#f5f5f5]">
-      {/* Toolbar - Modern & Compact */}
-      <div className="flex items-center justify-between bg-white border-b border-gray-200 px-4 py-3 shadow-sm">
-        {/* Sol taraf - Ana Araçlar */}
-        <div className="flex items-center gap-2">
+      {/* Toolbar - iPad Optimized with Horizontal Scroll */}
+      <div className="bg-white border-b border-gray-200 shadow-sm overflow-x-auto">
+        <div className="flex items-center gap-3 px-3 py-2.5 min-w-max">
+          {/* Çizim Araçları */}
+          <div className="flex items-center gap-2">
           {/* Çizim Araçları Grubu */}
           <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
             {/* Normal Kalem - İyi tanımlanmış çizgi */}
@@ -1485,10 +1481,13 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
             className="hidden"
           />
 
-          {/* Şekil Araçları - Dropdown */}
+          {/* Şekil Araçları - iPad Optimized */}
           <div className="relative">
             <button
-              onClick={() => setShowShapeMenu(!showShapeMenu)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowShapeMenu(!showShapeMenu);
+              }}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
                 ['line', 'rectangle', 'circle', 'arrow'].includes(tool)
                   ? 'bg-blue-100 text-blue-600'
@@ -1525,56 +1524,76 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
+          </div>
 
-            {/* Şekil Dropdown Menu */}
-            {showShapeMenu && (
-              <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 p-2 z-50 min-w-[200px]">
+          {/* Şekil Menüsü Modal - Fixed position for iPad */}
+          {showShapeMenu && (
+            <>
+              {/* Backdrop */}
+              <div 
+                className="fixed inset-0 bg-black/20 z-40"
+                onClick={() => setShowShapeMenu(false)}
+              />
+              {/* Shape Menu Panel */}
+              <div className="fixed top-16 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-2xl border-2 border-gray-200 p-3 z-50 max-w-sm w-full mx-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-bold text-gray-800">Şekil Seç</h3>
+                  <button
+                    onClick={() => setShowShapeMenu(false)}
+                    className="text-gray-500 hover:text-gray-700 text-xl font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+                
+                <div className="space-y-1">
                 <button
                   onClick={() => { setTool('line'); setShowShapeMenu(false); }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-gray-100 transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors"
                 >
-                  <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 20 L20 4" />
                   </svg>
                   <span className="font-semibold text-gray-800">Çizgi</span>
                 </button>
                 <button
                   onClick={() => { setTool('rectangle'); setShowShapeMenu(false); }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-gray-100 transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors"
                 >
-                  <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <rect x="3" y="5" width="18" height="14" strokeWidth={2} />
                   </svg>
                   <span className="font-semibold text-gray-800">Dikdörtgen</span>
                 </button>
                 <button
                   onClick={() => { setTool('circle'); setShowShapeMenu(false); }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-gray-100 transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors"
                 >
-                  <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="9" strokeWidth={2} />
                   </svg>
                   <span className="font-semibold text-gray-800">Daire</span>
                 </button>
                 <button
                   onClick={() => { setTool('arrow'); setShowShapeMenu(false); }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-gray-100 transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors"
                 >
-                  <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                   <span className="font-semibold text-gray-800">Ok</span>
                 </button>
+                </div>
 
                 {/* Şekil Özellikleri */}
                 {['rectangle', 'circle'].includes(tool) && (
                   <>
-                    <div className="h-px bg-gray-200 my-2"></div>
+                    <div className="h-px bg-gray-200 my-3"></div>
                     <button
                       onClick={() => setFillShape(!fillShape)}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-gray-100 transition-colors"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors"
                     >
-                      <svg className="w-5 h-5 text-gray-700" fill={fillShape ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-6 h-6 text-gray-700" fill={fillShape ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
                         <rect x="4" y="4" width="16" height="16" strokeWidth={2} />
                       </svg>
                       <span className="font-semibold text-gray-800">{fillShape ? 'Boş Şekil' : 'Dolu Şekil'}</span>
@@ -1583,79 +1602,127 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
                 )}
 
                 {/* Çizgi Stili */}
-                <div className="h-px bg-gray-200 my-2"></div>
-                <div className="px-2 py-1 text-xs text-gray-600 font-bold uppercase tracking-wide">Çizgi Stili</div>
-                <div className="flex gap-1 p-1">
+                <div className="h-px bg-gray-200 my-3"></div>
+                <div className="px-2 py-1 text-sm text-gray-700 font-bold uppercase tracking-wide">Çizgi Stili</div>
+                <div className="grid grid-cols-3 gap-2 p-2">
                   <button
                     onClick={() => setLineStyle('solid')}
-                    className={`flex-1 p-2 rounded-md transition-colors ${
-                      lineStyle === 'solid' ? 'bg-blue-100' : 'hover:bg-gray-100'
+                    className={`p-4 rounded-lg transition-all border-2 ${
+                      lineStyle === 'solid' 
+                        ? 'bg-blue-500 border-blue-600 shadow-lg' 
+                        : 'bg-gray-50 border-gray-300 hover:bg-gray-100 hover:border-gray-400'
                     }`}
-                    title="Düz"
+                    title="Düz Çizgi"
                   >
-                    <svg className="w-full h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <line x1="2" y1="12" x2="22" y2="12" strokeWidth={2} />
-                    </svg>
+                    <div className="flex flex-col items-center gap-2">
+                      <svg className="w-full h-6" fill="none" stroke={lineStyle === 'solid' ? '#ffffff' : '#1f2937'} viewBox="0 0 40 10">
+                        <line x1="2" y1="5" x2="38" y2="5" strokeWidth={3} strokeLinecap="round" />
+                      </svg>
+                      <span className={`text-xs font-bold ${lineStyle === 'solid' ? 'text-white' : 'text-gray-700'}`}>
+                        Düz
+                      </span>
+                    </div>
                   </button>
                   <button
                     onClick={() => setLineStyle('dashed')}
-                    className={`flex-1 p-2 rounded-md transition-colors ${
-                      lineStyle === 'dashed' ? 'bg-blue-100' : 'hover:bg-gray-100'
+                    className={`p-4 rounded-lg transition-all border-2 ${
+                      lineStyle === 'dashed' 
+                        ? 'bg-blue-500 border-blue-600 shadow-lg' 
+                        : 'bg-gray-50 border-gray-300 hover:bg-gray-100 hover:border-gray-400'
                     }`}
-                    title="Kesikli"
+                    title="Kesikli Çizgi"
                   >
-                    <svg className="w-full h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <line x1="2" y1="12" x2="22" y2="12" strokeWidth={2} strokeDasharray="4 2" />
-                    </svg>
+                    <div className="flex flex-col items-center gap-2">
+                      <svg className="w-full h-6" fill="none" stroke={lineStyle === 'dashed' ? '#ffffff' : '#1f2937'} viewBox="0 0 40 10">
+                        <line x1="2" y1="5" x2="38" y2="5" strokeWidth={3} strokeDasharray="6 3" strokeLinecap="round" />
+                      </svg>
+                      <span className={`text-xs font-bold ${lineStyle === 'dashed' ? 'text-white' : 'text-gray-700'}`}>
+                        Kesikli
+                      </span>
+                    </div>
                   </button>
                   <button
                     onClick={() => setLineStyle('dotted')}
-                    className={`flex-1 p-2 rounded-md transition-colors ${
-                      lineStyle === 'dotted' ? 'bg-blue-100' : 'hover:bg-gray-100'
+                    className={`p-4 rounded-lg transition-all border-2 ${
+                      lineStyle === 'dotted' 
+                        ? 'bg-blue-500 border-blue-600 shadow-lg' 
+                        : 'bg-gray-50 border-gray-300 hover:bg-gray-100 hover:border-gray-400'
                     }`}
-                    title="Noktalı"
+                    title="Noktalı Çizgi"
                   >
-                    <svg className="w-full h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <line x1="2" y1="12" x2="22" y2="12" strokeWidth={2} strokeDasharray="1 3" />
-                    </svg>
+                    <div className="flex flex-col items-center gap-2">
+                      <svg className="w-full h-6" fill="none" stroke={lineStyle === 'dotted' ? '#ffffff' : '#1f2937'} viewBox="0 0 40 10">
+                        <line x1="2" y1="5" x2="38" y2="5" strokeWidth={3} strokeDasharray="1 4" strokeLinecap="round" />
+                      </svg>
+                      <span className={`text-xs font-bold ${lineStyle === 'dotted' ? 'text-white' : 'text-gray-700'}`}>
+                        Noktalı
+                      </span>
+                    </div>
                   </button>
                 </div>
               </div>
-            )}
-          </div>
+            </>
+          )}
 
-          {/* Renk Seçici - Kompakt */}
+          {/* Renk Seçici - iPad Optimized */}
           <div className="relative">
             <button 
               className="w-10 h-10 rounded-lg border-2 border-gray-300 shadow-sm hover:border-gray-400 transition-colors"
               style={{ backgroundColor: color }}
-              onClick={() => setShowColorPicker(!showColorPicker)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowColorPicker(!showColorPicker);
+              }}
               title="Renk"
             />
-            
-            {showColorPicker && (
-              <div className="absolute top-full left-0 mt-1 bg-white p-3 rounded-lg shadow-xl border z-50">
+          </div>
+
+          {/* Renk Seçici Modal - Fixed position for iPad */}
+          {showColorPicker && (
+            <>
+              {/* Backdrop */}
+              <div 
+                className="fixed inset-0 bg-black/20 z-40"
+                onClick={() => setShowColorPicker(false)}
+              />
+              {/* Color Picker Panel */}
+              <div className="fixed top-16 left-1/2 -translate-x-1/2 bg-white p-4 rounded-xl shadow-2xl border-2 border-gray-200 z-50 max-w-xs w-full mx-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-bold text-gray-800">Renk Seç</h3>
+                  <button
+                    onClick={() => setShowColorPicker(false)}
+                    className="text-gray-500 hover:text-gray-700 text-xl font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
                 <div className="grid grid-cols-5 gap-2 mb-3">
                   {colors.map((c) => (
                     <button
                       key={c}
-                      onClick={() => setColor(c)}
-                      className={`w-8 h-8 rounded-md border-2 transition-all ${
-                        color === c ? 'border-blue-500 scale-110' : 'border-gray-300 hover:scale-105'
+                      onClick={() => {
+                        setColor(c);
+                        setShowColorPicker(false);
+                      }}
+                      className={`w-12 h-12 rounded-lg border-2 transition-all ${
+                        color === c ? 'border-blue-500 scale-110 shadow-lg' : 'border-gray-300 hover:scale-105'
                       }`}
                       style={{ backgroundColor: c }}
                     />
                   ))}
                 </div>
-                <input
-                  type="color"
-                  value={color}
-                  onChange={(e) => setColor(e.target.value)}
-                  className="w-full h-8 rounded cursor-pointer"
-                />
+                <div className="border-t pt-3">
+                  <label className="block text-xs font-bold text-gray-600 mb-2">Özel Renk</label>
+                  <input
+                    type="color"
+                    value={color}
+                    onChange={(e) => setColor(e.target.value)}
+                    className="w-full h-10 rounded-lg cursor-pointer border-2 border-gray-300"
+                  />
+                </div>
               </div>
-            )}
-          </div>
+            </>
+          )}
 
           {/* Kalınlık Slider - Kompakt */}
           <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2">
@@ -1769,8 +1836,10 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
           )}
         </div>
 
-        {/* Sağ taraf - Aksiyonlar */}
-        <div className="flex items-center gap-2">
+          <div className="w-px h-8 bg-gray-300 mx-1" />
+
+          {/* Arka Plan Seçimi */}
+          <div className="flex items-center gap-1">
           <button
             onClick={() => setBackground('plain')}
             className={`px-2 py-1 text-xs rounded-md transition-colors ${
@@ -1836,19 +1905,45 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
           >
             Kaydet
           </button>
+          </div>
         </div>
       </div>
 
-      {/* Canvas - Tam ekran, pinch-to-zoom */}
-      <div ref={containerRef} className="flex-1 overflow-auto relative bg-white" style={{ WebkitOverflowScrolling: 'touch' }}>
-        <div className="p-5 flex items-center justify-center min-h-full">
+      {/* Zoom Reset Butonu */}
+      {scale !== 1 && (
+        <button
+          onClick={() => setScale(1)}
+          className="fixed bottom-6 right-6 px-4 py-3 rounded-full bg-blue-500 text-white shadow-2xl hover:bg-blue-600 transition-all flex items-center gap-2 z-30 font-bold"
+          title="Zoom'u Sıfırla"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+          </svg>
+          Sıfırla
+        </button>
+      )}
+
+      {/* Zoom Seviyesi */}
+      {scale !== 1 && (
+        <div className="fixed top-20 right-6 px-3 py-2 rounded-lg bg-black/70 text-white text-sm font-bold z-30">
+          {Math.round(scale * 100)}%
+        </div>
+      )}
+
+      {/* Canvas - Zoom ve scroll */}
+      <div ref={containerRef} className="flex-1 overflow-auto relative bg-gray-100" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="p-5 flex items-center justify-center min-h-full" style={{ 
+          minWidth: `${800 * scale}px`,
+          minHeight: `${1000 * scale}px`
+        }}>
           <div 
             className="relative" 
             style={{ 
               width: '800px', 
               height: '1000px',
               transform: `scale(${scale})`,
-              transformOrigin: `${originX}% ${originY}%`
+              transformOrigin: 'center center',
+              transition: 'transform 0.1s ease-out'
             }}
           >
             {/* Arka plan canvas */}

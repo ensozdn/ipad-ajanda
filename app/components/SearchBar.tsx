@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Event, Document } from '../types';
+import { useTheme } from '../context/ThemeContext';
 
 interface SearchBarProps {
   events: Event[];
@@ -19,6 +20,7 @@ interface SearchResult {
 }
 
 export default function SearchBar({ events, documents, onEventSelect, onDocumentSelect }: SearchBarProps) {
+  const { theme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showResults, setShowResults] = useState(false);
@@ -114,7 +116,12 @@ export default function SearchBar({ events, documents, onEventSelect, onDocument
           onFocus={() => setShowResults(true)}
           onBlur={() => setTimeout(() => setShowResults(false), 200)}
           placeholder="Etkinlik veya not ara..."
-          className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+          className="w-full pl-10 pr-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+          style={{
+            backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
+            borderColor: theme === 'dark' ? '#4b5563' : '#d1d5db',
+            color: theme === 'dark' ? '#ffffff' : '#111827',
+          }}
         />
         {searchQuery && (
           <button

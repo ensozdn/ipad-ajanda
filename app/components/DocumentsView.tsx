@@ -362,10 +362,10 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
                   </div>
                 )}
                 
-                {/* Favori butonu - hover'da görünür */}
+                {/* Favori butonu - iPad için her zaman görünür */}
                 <button
                   onClick={(e) => handleToggleFavorite(doc, e)}
-                  className="absolute top-2 right-2 p-2 rounded-full bg-white/90 hover:bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-2 right-2 p-2 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all"
                   title={doc.isFavorite ? 'Favorilerden çıkar' : 'Favorilere ekle'}
                 >
                   <svg 
