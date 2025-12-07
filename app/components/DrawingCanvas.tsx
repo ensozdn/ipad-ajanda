@@ -53,6 +53,7 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   const [selectedPlacedImage, setSelectedPlacedImage] = useState<number | null>(null);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   const [isResizingImage, setIsResizingImage] = useState(false);
+  const [dragStartPos, setDragStartPos] = useState<{ x: number; y: number } | null>(null);
   
   // Metin aracı için
   const [textInput, setTextInput] = useState<{ x: number; y: number; text: string } | null>(null);
@@ -337,6 +338,7 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
         ) {
           setSelectedPlacedImage(i);
           setIsDraggingImage(true);
+          setDragStartPos({ x, y }); // Drag başlangıç konumunu kaydet
           return;
         }
       }
@@ -377,7 +379,7 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
 
   const draw = (e: React.PointerEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     // Image taşıma modunda ise
-    if (isDraggingImage && selectedPlacedImage !== null) {
+    if (isDraggingImage && selectedPlacedImage !== null && dragStartPos) {
       const canvas = canvasRef.current;
       if (!canvas) return;
 
@@ -385,28 +387,32 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
 
-      let x, y;
+      let currentX, currentY;
       if ('touches' in e) {
         const touch = e.touches[0];
-        x = (touch.clientX - rect.left) * scaleX;
-        y = (touch.clientY - rect.top) * scaleY;
+        currentX = (touch.clientX - rect.left) * scaleX;
+        currentY = (touch.clientY - rect.top) * scaleY;
       } else {
-        x = (e.clientX - rect.left) * scaleX;
-        y = (e.clientY - rect.top) * scaleY;
+        currentX = (e.clientX - rect.left) * scaleX;
+        currentY = (e.clientY - rect.top) * scaleY;
       }
 
-      // Fotoğrafın offset'ini hesapla ve güncelle
-      const img = placedImages[selectedPlacedImage];
-      const offsetX = x - img.x;
-      const offsetY = y - img.y;
+      // Fareyi ne kadar hareket ettirdiğini hesapla
+      const deltaX = currentX - dragStartPos.x;
+      const deltaY = currentY - dragStartPos.y;
 
+      // Fotoğrafı güncelle
+      const img = placedImages[selectedPlacedImage];
       const updatedImages = [...placedImages];
       updatedImages[selectedPlacedImage] = {
         ...img,
-        x: Math.max(0, Math.min(canvas.width - img.width, img.x + offsetX)),
-        y: Math.max(0, Math.min(canvas.height - img.height, img.y + offsetY))
+        x: Math.max(0, Math.min(canvas.width - img.width, img.x + deltaX)),
+        y: Math.max(0, Math.min(canvas.height - img.height, img.y + deltaY))
       };
       setPlacedImages(updatedImages);
+      
+      // Drag pozisyonunu güncelle
+      setDragStartPos({ x: currentX, y: currentY });
       return;
     }
 
@@ -510,6 +516,7 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   const stopDrawing = () => {
     if (isDraggingImage) {
       setIsDraggingImage(false);
+      setDragStartPos(null);
       saveToHistory();
       return;
     }
