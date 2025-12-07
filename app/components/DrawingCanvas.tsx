@@ -19,7 +19,7 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   const [isDrawing, setIsDrawing] = useState(false);
   const [color, setColor] = useState('#000000');
   const [lineWidth, setLineWidth] = useState(2);
-  const [tool, setTool] = useState<'pen' | 'eraser' | 'highlighter' | 'line' | 'rectangle' | 'circle' | 'arrow'>('pen');
+  const [tool, setTool] = useState<'pen' | 'eraser' | 'highlighter' | 'line' | 'rectangle' | 'circle' | 'arrow' | 'text'>('pen');
   const [background, setBackground] = useState<BackgroundType>(initialBackground);
   const [scale, setScale] = useState(1);
   const [originX, setOriginX] = useState(50); // Transform origin X (%)
@@ -35,6 +35,11 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   // Şekil çizimi için
   const [startPoint, setStartPoint] = useState<{ x: number; y: number } | null>(null);
   const [currentShape, setCurrentShape] = useState<ImageData | null>(null);
+  
+  // Metin aracı için
+  const [textInput, setTextInput] = useState<{ x: number; y: number; text: string } | null>(null);
+  const [fontSize, setFontSize] = useState(24);
+  const [fontFamily, setFontFamily] = useState('Arial');
   
   // Undo/Redo için history
   const [history, setHistory] = useState<string[]>([]);
@@ -293,6 +298,12 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
         setIsDrawing(false);
         return;
       }
+    }
+
+    // Metin aracı için tıklama
+    if (tool === 'text') {
+      setTextInput({ x, y, text: '' });
+      return;
     }
 
     setIsDrawing(true);
@@ -569,6 +580,28 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
     saveToHistory();
   };
 
+  const drawText = (text: string, x: number, y: number) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.font = `${fontSize}px ${fontFamily}`;
+    ctx.fillStyle = color;
+    ctx.textBaseline = 'top';
+    ctx.fillText(text, x, y);
+    
+    saveToHistory();
+  };
+
+  const handleTextSubmit = () => {
+    if (textInput && textInput.text.trim()) {
+      drawText(textInput.text, textInput.x, textInput.y);
+    }
+    setTextInput(null);
+  };
+
   const handleSave = () => {
     const canvas = canvasRef.current;
     const bgCanvas = backgroundCanvasRef.current;
@@ -741,6 +774,20 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M16.24 3.56l4.95 4.94c.78.79.78 2.05 0 2.84L12 20.53a4.008 4.008 0 0 1-5.66 0L2.81 17c-.78-.79-.78-2.05 0-2.84l10.6-10.6c.79-.78 2.05-.78 2.83 0"/>
+              </svg>
+            </button>
+            
+            <button
+              onClick={() => setTool('text')}
+              className={`p-2 rounded-md transition-all ${
+                tool === 'text' 
+                  ? 'bg-white text-blue-600 shadow-sm' 
+                  : 'text-gray-600 hover:bg-white/50'
+              }`}
+              title="Metin"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
               </svg>
             </button>
           </div>
@@ -1074,6 +1121,73 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
           </div>
         </div>
       </div>
+
+      {/* Metin Input Modal */}
+      {textInput !== null && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setTextInput(null)}>
+          <div className="bg-white rounded-xl shadow-2xl p-6 w-96 max-w-[90%]" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold mb-4">Metin Ekle</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Metin</label>
+                <textarea
+                  value={textInput.text}
+                  onChange={(e) => setTextInput({ ...textInput, text: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  rows={3}
+                  placeholder="Metni buraya yazın..."
+                  autoFocus
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Yazı Boyutu</label>
+                  <input
+                    type="number"
+                    value={fontSize}
+                    onChange={(e) => setFontSize(Number(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    min="8"
+                    max="72"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Yazı Tipi</label>
+                  <select
+                    value={fontFamily}
+                    onChange={(e) => setFontFamily(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="Arial">Arial</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                    <option value="Courier New">Courier New</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Verdana">Verdana</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex gap-2 mt-6">
+                <button
+                  onClick={() => setTextInput(null)}
+                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  İptal
+                </button>
+                <button
+                  onClick={handleTextSubmit}
+                  className="flex-1 px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                >
+                  Ekle
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
