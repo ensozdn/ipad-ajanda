@@ -517,6 +517,9 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
       const canvas = canvasRef.current;
       if (!canvas) return;
 
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
       const rect = canvas.getBoundingClientRect();
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
@@ -544,6 +547,50 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
         y: Math.max(0, Math.min(canvas.height, txt.y + deltaY))
       };
       setPlacedTexts(updatedTexts);
+
+      // Canvas'ı hemen güncelle (state update'ini bekleme)
+      const bgCanvas = backgroundCanvasRef.current;
+      if (bgCanvas) {
+        ctx.drawImage(bgCanvas, 0, 0);
+      }
+
+      // Güncellenen metni ve diğerlerini çiz
+      updatedTexts.forEach((t, index) => {
+        ctx.font = `${t.fontSize}px ${t.fontFamily}`;
+        ctx.fillStyle = t.color;
+        ctx.textBaseline = 'top';
+        ctx.fillText(t.text, t.x, t.y);
+
+        if (selectedTextIndex === index) {
+          const metrics = ctx.measureText(t.text);
+          const textWidth = metrics.width;
+          const textHeight = t.fontSize;
+          ctx.strokeStyle = '#3b82f6';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([5, 5]);
+          ctx.strokeRect(t.x, t.y - textHeight, textWidth, textHeight);
+          ctx.setLineDash([]);
+        }
+      });
+
+      // Fotoğrafları da çiz
+      placedImages.forEach((imgData, index) => {
+        ctx.drawImage(
+          imgData.img,
+          imgData.x,
+          imgData.y,
+          imgData.width,
+          imgData.height
+        );
+
+        if (selectedPlacedImage === index) {
+          ctx.strokeStyle = '#3b82f6';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([5, 5]);
+          ctx.strokeRect(imgData.x, imgData.y, imgData.width, imgData.height);
+          ctx.setLineDash([]);
+        }
+      });
 
       // Başlangıç pozisyonunu güncelle
       setTextDragStartPos({ x: currentX, y: currentY });
