@@ -406,6 +406,7 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
           setSelectedTextIndex(i);
           setTextDragStartPos({ x, y });
           setIsDraggingText(true);
+          setIsDrawing(true); // Draw event'lerini trigger et
           return;
         }
       }
