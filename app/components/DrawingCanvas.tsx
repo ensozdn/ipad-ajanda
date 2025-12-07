@@ -25,6 +25,10 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   const [originX, setOriginX] = useState(50); // Transform origin X (%)
   const [originY, setOriginY] = useState(50); // Transform origin Y (%)
   const [showColorPicker, setShowColorPicker] = useState(false);
+  
+  // Undo/Redo için history
+  const [history, setHistory] = useState<string[]>([]);
+  const [historyStep, setHistoryStep] = useState(-1);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -53,8 +57,13 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
       const img = new Image();
       img.onload = () => {
         ctx.drawImage(img, 0, 0);
+        // İlk history state'ini kaydet
+        saveToHistory();
       };
       img.src = initialData;
+    } else {
+      // Boş canvas için ilk state'i kaydet
+      saveToHistory();
     }
   }, [initialData]);
 
@@ -149,6 +158,22 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
       canvas.removeEventListener('touchend', handleTouchEnd);
     };
   }, [isDrawing, tool, color, lineWidth]);
+
+  // Klavye kısayolları (Ctrl+Z, Ctrl+Y)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault();
+        undo();
+      } else if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+        e.preventDefault();
+        redo();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [historyStep, history]);
 
   // Background değiştiğinde yeniden çiz
   useEffect(() => {
@@ -343,7 +368,74 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   };
 
   const stopDrawing = () => {
-    setIsDrawing(false);
+    if (isDrawing) {
+      setIsDrawing(false);
+      // Çizim bittiğinde history'ye kaydet
+      saveToHistory();
+    }
+  };
+
+  const saveToHistory = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const imageData = canvas.toDataURL();
+    setHistory(prev => {
+      // Eğer history'de geri gidilmişse, o noktadan sonrasını sil
+      const newHistory = prev.slice(0, historyStep + 1);
+      // Yeni state'i ekle
+      newHistory.push(imageData);
+      // Max 50 state tut (performans için)
+      if (newHistory.length > 50) {
+        newHistory.shift();
+        return newHistory;
+      }
+      return newHistory;
+    });
+    setHistoryStep(prev => {
+      const newStep = prev + 1;
+      return newStep >= 50 ? 49 : newStep;
+    });
+  };
+
+  const undo = () => {
+    if (historyStep <= 0) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const newStep = historyStep - 1;
+    setHistoryStep(newStep);
+
+    const img = new Image();
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+    };
+    img.src = history[newStep];
+  };
+
+  const redo = () => {
+    if (historyStep >= history.length - 1) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const newStep = historyStep + 1;
+    setHistoryStep(newStep);
+
+    const img = new Image();
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+    };
+    img.src = history[newStep];
   };
 
   const clearCanvas = () => {
@@ -354,6 +446,7 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
     if (!ctx) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    saveToHistory();
   };
 
   const handleSave = () => {
@@ -442,6 +535,39 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <path d="M16.24 3.56l4.95 4.94c.78.79.78 2.05 0 2.84L12 20.53a4.008 4.008 0 0 1-5.66 0L2.81 17c-.78-.79-.78-2.05 0-2.84l10.6-10.6c.79-.78 2.05-.78 2.83 0M4.22 15.58l3.54 3.53c.78.79 2.04.79 2.83 0l3.53-3.53-6.36-6.36-3.54 3.53c-.78.79-.78 2.05 0 2.83z"/>
+            </svg>
+          </button>
+
+          <div className="w-px h-6 bg-gray-300" />
+
+          {/* Undo/Redo */}
+          <button
+            onClick={undo}
+            disabled={historyStep <= 0}
+            className={`p-2 rounded-lg transition-colors ${
+              historyStep <= 0
+                ? 'text-gray-300 cursor-not-allowed'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+            title="Geri Al (Ctrl+Z)"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+            </svg>
+          </button>
+          
+          <button
+            onClick={redo}
+            disabled={historyStep >= history.length - 1}
+            className={`p-2 rounded-lg transition-colors ${
+              historyStep >= history.length - 1
+                ? 'text-gray-300 cursor-not-allowed'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+            title="İleri Al (Ctrl+Y)"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10h-10a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6" />
             </svg>
           </button>
 
