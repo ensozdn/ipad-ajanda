@@ -14,9 +14,10 @@ interface WeekViewProps {
   currentDate: Date;
   events: Event[];
   onEventClick: (event: Event) => void;
+  onTimeClick?: (date: Date, hour: number) => void;
 }
 
-export default function WeekView({ currentDate, events, onEventClick }: WeekViewProps) {
+export default function WeekView({ currentDate, events, onEventClick, onTimeClick }: WeekViewProps) {
   const getWeekDays = (date: Date) => {
     const days = [];
     const current = new Date(date);
@@ -108,12 +109,16 @@ export default function WeekView({ currentDate, events, onEventClick }: WeekView
                   return (
                     <div
                       key={dayIndex}
+                      onClick={() => onTimeClick?.(day, hour)}
                       className="bg-[var(--background-tertiary)] rounded p-2 min-h-[60px] hover:bg-[var(--border)] transition-colors cursor-pointer"
                     >
                       {dayEvents.map(event => (
                         <div
                           key={event.id}
-                          onClick={() => onEventClick(event)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEventClick(event);
+                          }}
                           className="text-xs px-2 py-1 rounded mb-1 cursor-pointer hover:opacity-80"
                           style={{ backgroundColor: event.color, color: '#fff' }}
                         >

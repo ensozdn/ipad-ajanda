@@ -145,6 +145,14 @@ export default function Home() {
     setShowEventModal(true);
   };
 
+  const handleWeekTimeClick = (date: Date, hour: number) => {
+    const newDate = new Date(date);
+    newDate.setHours(hour, 0, 0, 0);
+    setSelectedDate(newDate);
+    setEditingEvent(null);
+    setShowEventModal(true);
+  };
+
   const getUpcomingEvents = () => {
     const now = new Date();
     return events
@@ -271,6 +279,7 @@ export default function Home() {
             currentDate={currentDate}
             events={events}
             onEventClick={handleEventClick}
+            onTimeClick={handleWeekTimeClick}
           />
         )}
 
