@@ -49,6 +49,8 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   
   // Fotoğraf için
   const [selectedImage, setSelectedImage] = useState<{ img: HTMLImageElement; x: number; y: number; width: number; height: number } | null>(null);
+  const [placedImages, setPlacedImages] = useState<Array<{ img: HTMLImageElement; x: number; y: number; width: number; height: number }>>([]);
+  const [selectedPlacedImage, setSelectedPlacedImage] = useState<number | null>(null);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   const [isResizingImage, setIsResizingImage] = useState(false);
   
@@ -322,6 +324,25 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
       return;
     }
 
+    // Image tool için - fotoğrafı seçip taşıyabiliyor
+    if (tool === 'image') {
+      // Hangi fotoğrafın üzerine tıklandığını kontrol et
+      for (let i = placedImages.length - 1; i >= 0; i--) {
+        const img = placedImages[i];
+        if (
+          x >= img.x &&
+          x <= img.x + img.width &&
+          y >= img.y &&
+          y <= img.y + img.height
+        ) {
+          setSelectedPlacedImage(i);
+          setIsDraggingImage(true);
+          return;
+        }
+      }
+      return;
+    }
+
     setIsDrawing(true);
 
     // Şekil araçları için başlangıç noktasını kaydet
@@ -355,6 +376,40 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   };
 
   const draw = (e: React.PointerEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    // Image taşıma modunda ise
+    if (isDraggingImage && selectedPlacedImage !== null) {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+
+      let x, y;
+      if ('touches' in e) {
+        const touch = e.touches[0];
+        x = (touch.clientX - rect.left) * scaleX;
+        y = (touch.clientY - rect.top) * scaleY;
+      } else {
+        x = (e.clientX - rect.left) * scaleX;
+        y = (e.clientY - rect.top) * scaleY;
+      }
+
+      // Fotoğrafın offset'ini hesapla ve güncelle
+      const img = placedImages[selectedPlacedImage];
+      const offsetX = x - img.x;
+      const offsetY = y - img.y;
+
+      const updatedImages = [...placedImages];
+      updatedImages[selectedPlacedImage] = {
+        ...img,
+        x: Math.max(0, Math.min(canvas.width - img.width, img.x + offsetX)),
+        y: Math.max(0, Math.min(canvas.height - img.height, img.y + offsetY))
+      };
+      setPlacedImages(updatedImages);
+      return;
+    }
+
     if (!isDrawing) return;
 
     const canvas = canvasRef.current;
@@ -430,9 +485,35 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
 
     ctx.lineTo(x, y);
     ctx.stroke();
+
+    // Yapıştırılan fotoğrafları canvas'a çiz
+    placedImages.forEach((imgData, index) => {
+      ctx.drawImage(
+        imgData.img,
+        imgData.x,
+        imgData.y,
+        imgData.width,
+        imgData.height
+      );
+
+      // Seçilen fotoğrafın etrafına border çiz
+      if (selectedPlacedImage === index) {
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.strokeRect(imgData.x, imgData.y, imgData.width, imgData.height);
+        ctx.setLineDash([]);
+      }
+    });
   };
 
   const stopDrawing = () => {
+    if (isDraggingImage) {
+      setIsDraggingImage(false);
+      saveToHistory();
+      return;
+    }
+
     if (isDrawing) {
       setIsDrawing(false);
       // Şekil çizimi tamamlandıysa state'i temizle
@@ -525,6 +606,20 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   const saveToHistory = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Yapıştırılan fotoğrafları canvas'a çiz (kalıcı olarak)
+    placedImages.forEach((imgData) => {
+      ctx.drawImage(
+        imgData.img,
+        imgData.x,
+        imgData.y,
+        imgData.width,
+        imgData.height
+      );
+    });
 
     const imageData = canvas.toDataURL();
     setHistory(prev => {
@@ -735,8 +830,8 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        // Resmi canvas ortasına yerleştir, max 400px boyutunda
-        const maxSize = 400;
+        // Resmi canvas ortasına yerleştir, max 600px boyutunda
+        const maxSize = 600;
         let width = img.width;
         let height = img.height;
 
@@ -763,19 +858,11 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.drawImage(
-      selectedImage.img,
-      selectedImage.x,
-      selectedImage.y,
-      selectedImage.width,
-      selectedImage.height
-    );
-
+    // Fotoğrafı yapıştırılan fotoğraflar listesine ekle
+    setPlacedImages([...placedImages, selectedImage]);
     setSelectedImage(null);
-    setTool('pen');
+    setSelectedPlacedImage(placedImages.length); // Yeni eklenen fotoğrafı seç
+    setTool('image'); // Image modunda kal
     saveToHistory();
   };
 
@@ -1409,7 +1496,7 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
             <input
               type="range"
               min="50"
-              max="600"
+              max="1000"
               value={selectedImage.width}
               onChange={(e) => {
                 const newWidth = Number(e.target.value);
