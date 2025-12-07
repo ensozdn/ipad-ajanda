@@ -234,7 +234,7 @@ export default function Home() {
         <div className="flex gap-2 p-1 bg-[var(--background-secondary)] rounded-lg w-fit overflow-x-auto">
           <button 
             onClick={() => setViewMode('month')}
-            className={`px-6 py-2 rounded-md font-medium transition-colors whitespace-nowrap ${viewMode === 'month' ? 'bg-[var(--accent)]' : 'hover:bg-[var(--background-tertiary)]'}`}
+            className={`px-6 py-2 rounded-md font-medium transition-colors whitespace-nowrap text-base ${viewMode === 'month' ? 'bg-[var(--accent)]' : 'hover:bg-[var(--background-tertiary)]'}`}
           >
             Ay
           </button>
