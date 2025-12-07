@@ -666,14 +666,39 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
     if (pages.length <= 1) return; // En az 1 sayfa olmalı
 
     const updatedPages = pages.filter((_, i) => i !== index);
-    setPages(updatedPages);
     
-    // Eğer silinen sayfa aktif sayfaysa, bir öncekine git
+    // Silinecek sayfa aktif sayfaysa
     if (index === currentPageIndex) {
       const newIndex = Math.max(0, index - 1);
-      loadPage(newIndex);
-    } else if (index < currentPageIndex) {
-      setCurrentPageIndex(currentPageIndex - 1);
+      setPages(updatedPages);
+      setCurrentPageIndex(newIndex);
+      setBackground(updatedPages[newIndex]?.background || 'plain');
+      
+      // Canvas'ı yeni sayfaya göre yükle
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          if (updatedPages[newIndex]?.imageData) {
+            const img = new Image();
+            img.onload = () => {
+              ctx.drawImage(img, 0, 0);
+              saveToHistory();
+            };
+            img.src = updatedPages[newIndex].imageData;
+          } else {
+            saveToHistory();
+          }
+        }
+      }
+    } else {
+      // Silinen sayfa aktif değilse, sadece index'i güncelle
+      setPages(updatedPages);
+      if (index < currentPageIndex) {
+        setCurrentPageIndex(currentPageIndex - 1);
+      }
     }
   };
 
