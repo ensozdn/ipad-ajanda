@@ -107,6 +107,65 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
     }
   }, [initialData]);
 
+  // PlacedTexts veya placedImages değiştiğinde canvas'ı redraw et
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Canvas'ı redraw et (mevcut durumu koru)
+    // Sadece text ve image layer'ını güncelle
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Arka planı tekrar çiz
+    const bgCanvas = backgroundCanvasRef.current;
+    if (bgCanvas) {
+      ctx.drawImage(bgCanvas, 0, 0);
+    }
+
+    // Metinleri çiz
+    placedTexts.forEach((txt, index) => {
+      ctx.font = `${txt.fontSize}px ${txt.fontFamily}`;
+      ctx.fillStyle = txt.color;
+      ctx.textBaseline = 'top';
+      ctx.fillText(txt.text, txt.x, txt.y);
+
+      // Seçilen metnin etrafına border çiz
+      if (selectedTextIndex === index) {
+        const metrics = ctx.measureText(txt.text);
+        const textWidth = metrics.width;
+        const textHeight = txt.fontSize;
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.strokeRect(txt.x, txt.y - textHeight, textWidth, textHeight);
+        ctx.setLineDash([]);
+      }
+    });
+
+    // Fotoğrafları çiz
+    placedImages.forEach((imgData, index) => {
+      ctx.drawImage(
+        imgData.img,
+        imgData.x,
+        imgData.y,
+        imgData.width,
+        imgData.height
+      );
+
+      // Seçilen fotoğrafın etrafına border çiz
+      if (selectedPlacedImage === index) {
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.strokeRect(imgData.x, imgData.y, imgData.width, imgData.height);
+        ctx.setLineDash([]);
+      }
+    });
+  }, [placedTexts, placedImages, selectedTextIndex, selectedPlacedImage]);
+
   // Pinch-to-zoom handler for canvas container
   useEffect(() => {
     const container = containerRef.current;
@@ -1035,7 +1094,22 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
         fontFamily: fontFamily,
         color: color
       };
-      setPlacedTexts([...placedTexts, newText]);
+      const updatedTexts = [...placedTexts, newText];
+      setPlacedTexts(updatedTexts);
+      
+      // Canvas'ı hemen güncelle (state güncellemesinin tamamlanmasını bekleme)
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          // Yeni metni direkt canvas'a çiz
+          ctx.font = `${fontSize}px ${fontFamily}`;
+          ctx.fillStyle = color;
+          ctx.textBaseline = 'top';
+          ctx.fillText(newText.text, newText.x, newText.y);
+        }
+      }
+      
       saveToHistory();
     }
     setTextInput(null);
