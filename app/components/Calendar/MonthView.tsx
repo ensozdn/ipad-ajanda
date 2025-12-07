@@ -124,7 +124,7 @@ export default function MonthView({ currentDate, events, onDateClick, onEventCli
             return <div key={`empty-${index}`} className="aspect-square" />;
           }
 
-          const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+          const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day, 12, 0, 0, 0);
           const dayEvents = getEventsForDate(date);
           const today = isToday(date);
 
