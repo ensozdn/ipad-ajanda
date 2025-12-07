@@ -25,7 +25,11 @@ export default function MonthView({ currentDate, events, onDateClick, onEventCli
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
+    let startingDayOfWeek = firstDay.getDay();
+    
+    // JavaScript'te Pazar=0, Pazartesi=1
+    // Biz Pazartesi'den başlatıyoruz, o yüzden ayarlama yapıyoruz
+    startingDayOfWeek = startingDayOfWeek === 0 ? 6 : startingDayOfWeek - 1;
 
     return { daysInMonth, startingDayOfWeek };
   };
