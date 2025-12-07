@@ -8,6 +8,8 @@ interface Page {
   id: string;
   imageData: string;
   background: BackgroundType;
+  placedTexts?: Array<{ id: string; x: number; y: number; text: string; fontSize: number; fontFamily: string; color: string }>;
+  placedImages?: Array<{ x: number; y: number; width: number; height: number; imageData: string }>;
 }
 
 interface DrawingCanvasProps {
@@ -59,6 +61,10 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   const [textInput, setTextInput] = useState<{ x: number; y: number; text: string } | null>(null);
   const [fontSize, setFontSize] = useState(24);
   const [fontFamily, setFontFamily] = useState('Arial');
+  const [placedTexts, setPlacedTexts] = useState<Array<{ id: string; x: number; y: number; text: string; fontSize: number; fontFamily: string; color: string }>>([]);
+  const [selectedTextIndex, setSelectedTextIndex] = useState<number | null>(null);
+  const [isDraggingText, setIsDraggingText] = useState(false);
+  const [textDragStartPos, setTextDragStartPos] = useState<{ x: number; y: number } | null>(null);
   
   // Undo/Redo için history
   const [history, setHistory] = useState<string[]>([]);
@@ -321,8 +327,62 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
 
     // Metin aracı için tıklama
     if (tool === 'text') {
+      // Var olan metne tıklandı mı kontrol et
+      for (let i = placedTexts.length - 1; i >= 0; i--) {
+        const txt = placedTexts[i];
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        if (!tempCtx) continue;
+        tempCtx.font = `${txt.fontSize}px ${txt.fontFamily}`;
+        const metrics = tempCtx.measureText(txt.text);
+        const textWidth = metrics.width;
+        const textHeight = txt.fontSize;
+        
+        if (
+          x >= txt.x &&
+          x <= txt.x + textWidth &&
+          y >= txt.y - textHeight &&
+          y <= txt.y
+        ) {
+          setSelectedTextIndex(i);
+          setTextDragStartPos({ x, y });
+          setIsDraggingText(true);
+          return;
+        }
+      }
+      
+      // Yeni metin ekleme
       setTextInput({ x, y, text: '' });
       return;
+    }
+
+    // Eraser tool - metni silme
+    if (tool === 'eraser') {
+      // Hangi metne tıklandığını kontrol et
+      for (let i = placedTexts.length - 1; i >= 0; i--) {
+        const txt = placedTexts[i];
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        if (!tempCtx) continue;
+        tempCtx.font = `${txt.fontSize}px ${txt.fontFamily}`;
+        const metrics = tempCtx.measureText(txt.text);
+        const textWidth = metrics.width;
+        const textHeight = txt.fontSize;
+        
+        if (
+          x >= txt.x &&
+          x <= txt.x + textWidth &&
+          y >= txt.y - textHeight &&
+          y <= txt.y
+        ) {
+          // Metni sil
+          const updatedTexts = placedTexts.filter((_, index) => index !== i);
+          setPlacedTexts(updatedTexts);
+          setSelectedTextIndex(null);
+          saveToHistory();
+          return;
+        }
+      }
     }
 
     // Image tool için - fotoğrafı seçip taşıyabiliyor
@@ -393,6 +453,44 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   };
 
   const draw = (e: React.PointerEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    // Text taşıma modunda ise
+    if (isDraggingText && selectedTextIndex !== null && textDragStartPos) {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+
+      let currentX, currentY;
+      if ('touches' in e) {
+        const touch = e.touches[0];
+        currentX = (touch.clientX - rect.left) * scaleX;
+        currentY = (touch.clientY - rect.top) * scaleY;
+      } else {
+        currentX = (e.clientX - rect.left) * scaleX;
+        currentY = (e.clientY - rect.top) * scaleY;
+      }
+
+      // Fareyi ne kadar hareket ettirdiğini hesapla
+      const deltaX = currentX - textDragStartPos.x;
+      const deltaY = currentY - textDragStartPos.y;
+
+      // Metni güncelle
+      const txt = placedTexts[selectedTextIndex];
+      const updatedTexts = [...placedTexts];
+      updatedTexts[selectedTextIndex] = {
+        ...txt,
+        x: Math.max(0, Math.min(canvas.width, txt.x + deltaX)),
+        y: Math.max(0, Math.min(canvas.height, txt.y + deltaY))
+      };
+      setPlacedTexts(updatedTexts);
+
+      // Başlangıç pozisyonunu güncelle
+      setTextDragStartPos({ x: currentX, y: currentY });
+      return;
+    }
+
     // Image taşıma modunda ise
     if (isDraggingImage && selectedPlacedImage !== null && dragStartPos) {
       const canvas = canvasRef.current;
@@ -531,6 +629,26 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
     ctx.lineTo(x, y);
     ctx.stroke();
 
+    // Yerleştirilen metinleri canvas'a çiz
+    placedTexts.forEach((txt, index) => {
+      ctx.font = `${txt.fontSize}px ${txt.fontFamily}`;
+      ctx.fillStyle = txt.color;
+      ctx.textBaseline = 'top';
+      ctx.fillText(txt.text, txt.x, txt.y);
+
+      // Seçilen metnin etrafına border çiz
+      if (selectedTextIndex === index) {
+        const metrics = ctx.measureText(txt.text);
+        const textWidth = metrics.width;
+        const textHeight = txt.fontSize;
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.strokeRect(txt.x, txt.y - textHeight, textWidth, textHeight);
+        ctx.setLineDash([]);
+      }
+    });
+
     // Yapıştırılan fotoğrafları canvas'a çiz
     placedImages.forEach((imgData, index) => {
       ctx.drawImage(
@@ -553,6 +671,13 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   };
 
   const stopDrawing = () => {
+    if (isDraggingText) {
+      setIsDraggingText(false);
+      setTextDragStartPos(null);
+      saveToHistory();
+      return;
+    }
+
     if (isDraggingImage) {
       setIsDraggingImage(false);
       setDragStartPos(null);
@@ -743,11 +868,23 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
     if (!canvas) return;
 
     const imageData = canvas.toDataURL('image/png');
+    
+    // Fotoğrafları data URL'lerine dönüştür
+    const savedImages = placedImages.map(img => ({
+      x: img.x,
+      y: img.y,
+      width: img.width,
+      height: img.height,
+      imageData: img.img.src
+    }));
+
     const updatedPages = [...pages];
     updatedPages[currentPageIndex] = {
       ...updatedPages[currentPageIndex],
       imageData,
-      background
+      background,
+      placedTexts: [...placedTexts],
+      placedImages: savedImages
     };
     setPages(updatedPages);
   };
@@ -766,6 +903,34 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
     const page = pages[index];
     setCurrentPageIndex(index);
     setBackground(page.background);
+    
+    // Metinleri ve fotoğrafları yükle
+    setPlacedTexts(page.placedTexts || []);
+    
+    // Fotoğrafları yükle
+    const loadedImages: typeof placedImages = [];
+    if (page.placedImages && page.placedImages.length > 0) {
+      let loadedCount = 0;
+      page.placedImages.forEach((imgData) => {
+        const img = new Image();
+        img.onload = () => {
+          loadedImages.push({
+            img: img,
+            x: imgData.x,
+            y: imgData.y,
+            width: imgData.width,
+            height: imgData.height
+          });
+          loadedCount++;
+          if (loadedCount === page.placedImages!.length) {
+            setPlacedImages(loadedImages);
+          }
+        };
+        img.src = imgData.imageData;
+      });
+    } else {
+      setPlacedImages([]);
+    }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
@@ -860,9 +1025,21 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
 
   const handleTextSubmit = () => {
     if (textInput && textInput.text.trim()) {
-      drawText(textInput.text, textInput.x, textInput.y);
+      // Metni placedTexts'e ekle (taşınabilir olacak)
+      const newText = {
+        id: `text-${Date.now()}`,
+        x: textInput.x,
+        y: textInput.y,
+        text: textInput.text,
+        fontSize: fontSize,
+        fontFamily: fontFamily,
+        color: color
+      };
+      setPlacedTexts([...placedTexts, newText]);
+      saveToHistory();
     }
     setTextInput(null);
+    setSelectedTextIndex(null);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
