@@ -26,7 +26,7 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   const [isDrawing, setIsDrawing] = useState(false);
   const [color, setColor] = useState('#000000');
   const [lineWidth, setLineWidth] = useState(2);
-  const [tool, setTool] = useState<'pen' | 'eraser' | 'highlighter' | 'line' | 'rectangle' | 'circle' | 'arrow' | 'text' | 'image'>('pen');
+  const [tool, setTool] = useState<'pen' | 'eraser' | 'highlighter' | 'marker' | 'pencil' | 'crayon' | 'line' | 'rectangle' | 'circle' | 'arrow' | 'text' | 'image'>('pen');
   const [background, setBackground] = useState<BackgroundType>(initialBackground);
   const [scale, setScale] = useState(1);
   const [originX, setOriginX] = useState(50); // Transform origin X (%)
@@ -369,6 +369,21 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
       ctx.strokeStyle = color;
       ctx.globalAlpha = 0.3; // Yarı saydam
       ctx.lineWidth = lineWidth * 4; // Daha kalın
+    } else if (tool === 'marker') {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = color;
+      ctx.globalAlpha = 1.0; // Tam opak
+      ctx.lineWidth = lineWidth * 5; // Çok kalın
+    } else if (tool === 'pencil') {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = color;
+      ctx.globalAlpha = 0.8;
+      ctx.lineWidth = lineWidth * 0.5; // Çok ince
+    } else if (tool === 'crayon') {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = color;
+      ctx.globalAlpha = 0.6; // Yarı saydam
+      ctx.lineWidth = lineWidth * 3; // Orta kalın
     } else {
       ctx.globalCompositeOperation = 'source-over';
       ctx.globalAlpha = 1.0;
@@ -1058,6 +1073,49 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M18.5 1.15c-.53 0-1.04.21-1.41.59l-8.84 8.84c-.37.37-.59.88-.59 1.41 0 .53.21 1.04.59 1.41l2.83 2.83c.78.78 2.05.78 2.83 0l8.84-8.84c.37-.37.59-.88.59-1.41 0-.53-.21-1.04-.59-1.41l-2.83-2.83c-.37-.38-.88-.59-1.42-.59" opacity="0.7"/>
+              </svg>
+            </button>
+
+            <button
+              onClick={() => setTool('marker')}
+              className={`p-2 rounded-md transition-all ${
+                tool === 'marker' 
+                  ? 'bg-white text-orange-600 shadow-sm' 
+                  : 'text-gray-600 hover:bg-white/50'
+              }`}
+              title="Marker (Kalın)"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <rect x="4" y="2" width="4" height="20" rx="1" fill="currentColor"/>
+                <rect x="10" y="4" width="10" height="2" fill="currentColor"/>
+              </svg>
+            </button>
+
+            <button
+              onClick={() => setTool('pencil')}
+              className={`p-2 rounded-md transition-all ${
+                tool === 'pencil' 
+                  ? 'bg-white text-yellow-700 shadow-sm' 
+                  : 'text-gray-600 hover:bg-white/50'
+              }`}
+              title="Kalem (İnce)"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+
+            <button
+              onClick={() => setTool('crayon')}
+              className={`p-2 rounded-md transition-all ${
+                tool === 'crayon' 
+                  ? 'bg-white text-red-600 shadow-sm' 
+                  : 'text-gray-600 hover:bg-white/50'
+              }`}
+              title="Pastel (Soft)"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" opacity="0.6"/>
               </svg>
             </button>
             
