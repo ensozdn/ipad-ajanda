@@ -7,6 +7,7 @@ import DayView from './components/Calendar/DayView';
 import ListView from './components/Calendar/ListView';
 import EventModal from './components/EventModal';
 import DocumentsView from './components/DocumentsView';
+import SearchBar from './components/SearchBar';
 import { Event, ViewMode, Document } from './types';
 import NotificationSettings from './components/NotificationSettings';
 import { useNotifications } from './hooks/useNotifications';
@@ -167,6 +168,22 @@ export default function Home() {
               })}
             </p>
           </div>
+          
+          {/* Search Bar */}
+          <SearchBar
+            events={events}
+            documents={documents}
+            onEventSelect={(event) => {
+              setEditingEvent(event);
+              setSelectedDate(null);
+              setShowEventModal(true);
+            }}
+            onDocumentSelect={(document) => {
+              setViewMode('documents');
+              // DocumentsView otomatik olarak seçili dokumanı açacak
+            }}
+          />
+          
           {viewMode !== 'documents' && (
             <button 
               onClick={() => {
