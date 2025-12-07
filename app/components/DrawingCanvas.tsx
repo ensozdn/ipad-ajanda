@@ -500,21 +500,59 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
     const bgCanvas = backgroundCanvasRef.current;
     if (!canvas || !bgCanvas) return;
 
-    // jsPDF kütüphanesi olmadan basit bir çözüm
-    // Canvas'ı PNG olarak PDF'e dönüştürme
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = canvas.width;
-    tempCanvas.height = canvas.height;
-    const tempCtx = tempCanvas.getContext('2d');
-    if (!tempCtx) return;
+    try {
+      // jsPDF'i dinamik import ile yükle
+      const { jsPDF } = await import('jspdf');
+      
+      // Geçici canvas oluştur - arka plan + çizim birleştir
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
+      const tempCtx = tempCanvas.getContext('2d');
+      if (!tempCtx) return;
 
-    tempCtx.drawImage(bgCanvas, 0, 0);
-    tempCtx.drawImage(canvas, 0, 0);
+      tempCtx.drawImage(bgCanvas, 0, 0);
+      tempCtx.drawImage(canvas, 0, 0);
 
-    // Şimdilik PNG olarak indir, PDF için jsPDF kütüphanesi gerekli
-    // TODO: jsPDF eklenebilir
-    alert('PDF export özelliği yakında eklenecek! Şimdilik PNG olarak indiriliyor.');
-    exportAsPNG();
+      // Canvas'ı image olarak al
+      const imgData = tempCanvas.toDataURL('image/png');
+      
+      // PDF oluştur - A4 boyutunda
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      // A4 boyutları: 210mm x 297mm
+      const pdfWidth = 210;
+      const pdfHeight = 297;
+      
+      // Canvas oranını koru
+      const canvasRatio = canvas.height / canvas.width;
+      let imgWidth = pdfWidth;
+      let imgHeight = pdfWidth * canvasRatio;
+      
+      // Eğer yükseklik A4'ü aşarsa, yüksekliğe göre ölçekle
+      if (imgHeight > pdfHeight) {
+        imgHeight = pdfHeight;
+        imgWidth = pdfHeight / canvasRatio;
+      }
+      
+      // Ortala
+      const x = (pdfWidth - imgWidth) / 2;
+      const y = (pdfHeight - imgHeight) / 2;
+      
+      // PDF'e image ekle
+      pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+      
+      // PDF'i indir
+      pdf.save(`not_${new Date().getTime()}.pdf`);
+    } catch (error) {
+      console.error('PDF oluşturma hatası:', error);
+      alert('PDF oluşturulurken bir hata oluştu. PNG olarak indiriliyor.');
+      exportAsPNG();
+    }
   };
 
   const colors = [
