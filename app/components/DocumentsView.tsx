@@ -263,9 +263,9 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
 
       {/* Kategori Filtreleri */}
       <div className="flex gap-2 flex-wrap">
-        {DEFAULT_CATEGORIES.map((category) => {
+        {DEFAULT_CATEGORIES.filter(cat => cat.id !== 'all').map((category) => {
           const count = getCategoryCount(category.id);
-          if (count === 0 && category.id !== 'all') return null;
+          if (count === 0) return null;
           
           return (
             <button
