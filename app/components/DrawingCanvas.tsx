@@ -19,12 +19,16 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   const [isDrawing, setIsDrawing] = useState(false);
   const [color, setColor] = useState('#000000');
   const [lineWidth, setLineWidth] = useState(2);
-  const [tool, setTool] = useState<'pen' | 'eraser' | 'highlighter'>('pen');
+  const [tool, setTool] = useState<'pen' | 'eraser' | 'highlighter' | 'line' | 'rectangle' | 'circle' | 'arrow'>('pen');
   const [background, setBackground] = useState<BackgroundType>(initialBackground);
   const [scale, setScale] = useState(1);
   const [originX, setOriginX] = useState(50); // Transform origin X (%)
   const [originY, setOriginY] = useState(50); // Transform origin Y (%)
   const [showColorPicker, setShowColorPicker] = useState(false);
+  
+  // Şekil çizimi için
+  const [startPoint, setStartPoint] = useState<{ x: number; y: number } | null>(null);
+  const [currentShape, setCurrentShape] = useState<ImageData | null>(null);
   
   // Undo/Redo için history
   const [history, setHistory] = useState<string[]>([]);
@@ -287,6 +291,15 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
 
     setIsDrawing(true);
 
+    // Şekil araçları için başlangıç noktasını kaydet
+    const isShapeTool = ['line', 'rectangle', 'circle', 'arrow'].includes(tool);
+    if (isShapeTool) {
+      setStartPoint({ x, y });
+      // Şekil çizimi için mevcut canvas'ı kaydet
+      setCurrentShape(ctx.getImageData(0, 0, canvas.width, canvas.height));
+      return;
+    }
+
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineCap = 'round';
@@ -355,6 +368,25 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
       pressure = e.pressure || 0.5;
     }
 
+    // Şekil araçları için önizleme
+    const isShapeTool = ['line', 'rectangle', 'circle', 'arrow'].includes(tool);
+    if (isShapeTool && startPoint && currentShape) {
+      // Önceki canvas'ı geri yükle (önizleme için)
+      ctx.putImageData(currentShape, 0, 0);
+      
+      // Şekil stili
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1.0;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      
+      // Şekli çiz
+      drawShape(ctx, tool, startPoint.x, startPoint.y, x, y);
+      return;
+    }
+
     // Apple Pencil basınç desteği
     if (tool === 'pen') {
       ctx.lineWidth = lineWidth * (pressure > 0 ? pressure * 2 : 1);
@@ -370,8 +402,70 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   const stopDrawing = () => {
     if (isDrawing) {
       setIsDrawing(false);
+      // Şekil çizimi tamamlandıysa state'i temizle
+      setStartPoint(null);
+      setCurrentShape(null);
       // Çizim bittiğinde history'ye kaydet
       saveToHistory();
+    }
+  };
+
+  // Şekil çizme fonksiyonu
+  const drawShape = (
+    ctx: CanvasRenderingContext2D,
+    shapeType: string,
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number
+  ) => {
+    ctx.beginPath();
+
+    if (shapeType === 'line') {
+      // Düz çizgi
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    } else if (shapeType === 'rectangle') {
+      // Dikdörtgen
+      const width = x2 - x1;
+      const height = y2 - y1;
+      ctx.strokeRect(x1, y1, width, height);
+    } else if (shapeType === 'circle') {
+      // Daire (elips)
+      const radiusX = Math.abs(x2 - x1) / 2;
+      const radiusY = Math.abs(y2 - y1) / 2;
+      const centerX = x1 + (x2 - x1) / 2;
+      const centerY = y1 + (y2 - y1) / 2;
+      ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
+      ctx.stroke();
+    } else if (shapeType === 'arrow') {
+      // Ok
+      const headLength = 20; // Ok başının uzunluğu
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+      
+      // Ana çizgi
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      
+      // Ok başı (sağ taraf)
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(
+        x2 - headLength * Math.cos(angle - Math.PI / 6),
+        y2 - headLength * Math.sin(angle - Math.PI / 6)
+      );
+      ctx.stroke();
+      
+      // Ok başı (sol taraf)
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(
+        x2 - headLength * Math.cos(angle + Math.PI / 6),
+        y2 - headLength * Math.sin(angle + Math.PI / 6)
+      );
+      ctx.stroke();
     }
   };
 
@@ -620,6 +714,65 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <path d="M16.24 3.56l4.95 4.94c.78.79.78 2.05 0 2.84L12 20.53a4.008 4.008 0 0 1-5.66 0L2.81 17c-.78-.79-.78-2.05 0-2.84l10.6-10.6c.79-.78 2.05-.78 2.83 0M4.22 15.58l3.54 3.53c.78.79 2.04.79 2.83 0l3.53-3.53-6.36-6.36-3.54 3.53c-.78.79-.78 2.05 0 2.83z"/>
+            </svg>
+          </button>
+
+          <div className="w-px h-6 bg-gray-300" />
+
+          {/* Şekil Araçları */}
+          <button
+            onClick={() => setTool('line')}
+            className={`p-2 rounded-lg transition-colors ${
+              tool === 'line' 
+                ? 'bg-blue-100 text-blue-600' 
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+            title="Çizgi"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 20 L20 4" />
+            </svg>
+          </button>
+          
+          <button
+            onClick={() => setTool('rectangle')}
+            className={`p-2 rounded-lg transition-colors ${
+              tool === 'rectangle' 
+                ? 'bg-blue-100 text-blue-600' 
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+            title="Dikdörtgen"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <rect x="3" y="5" width="18" height="14" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+          
+          <button
+            onClick={() => setTool('circle')}
+            className={`p-2 rounded-lg transition-colors ${
+              tool === 'circle' 
+                ? 'bg-blue-100 text-blue-600' 
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+            title="Daire"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9" strokeWidth={2} />
+            </svg>
+          </button>
+          
+          <button
+            onClick={() => setTool('arrow')}
+            className={`p-2 rounded-lg transition-colors ${
+              tool === 'arrow' 
+                ? 'bg-blue-100 text-blue-600' 
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+            title="Ok"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
           </button>
 
