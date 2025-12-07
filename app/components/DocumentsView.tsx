@@ -91,7 +91,7 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
           </button>
           <input
             type="text"
-            value={selectedDocument?.title || 'Yeni Belge'}
+            value={selectedDocument?.title || 'Yeni Not'}
             onChange={(e) => {
               if (selectedDocument) {
                 setSelectedDocument({
@@ -100,6 +100,7 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
                 });
               }
             }}
+            placeholder="Not başlığı"
             className="px-4 py-2 bg-[var(--background-secondary)] rounded-lg border border-[var(--border)] focus:outline-none focus:border-[var(--accent)] text-center font-medium"
           />
           <div className="w-20"></div>
@@ -197,9 +198,21 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
                 )}
               </div>
               <div className="p-3">
-                <h3 className="font-medium mb-1 truncate text-sm" onClick={() => handleOpenDocument(doc)}>
-                  {doc.title}
-                </h3>
+                <input
+                  type="text"
+                  value={doc.title}
+                  onChange={(e) => {
+                    const updatedDoc = {
+                      ...doc,
+                      title: e.target.value,
+                      updatedAt: new Date(),
+                    };
+                    onSaveDocument(updatedDoc);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  placeholder="Not başlığı"
+                  className="w-full font-medium mb-1 text-sm bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-[var(--accent)] rounded px-1"
+                />
                 <div className="flex items-center justify-between text-xs text-[var(--foreground-secondary)]">
                   <span>
                     {new Date(doc.updatedAt).toLocaleDateString('tr-TR', {
