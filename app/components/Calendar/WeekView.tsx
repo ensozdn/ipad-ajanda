@@ -15,9 +15,10 @@ interface WeekViewProps {
   events: Event[];
   onEventClick: (event: Event) => void;
   onTimeClick?: (date: Date, hour: number) => void;
+  onDateChange?: (date: Date) => void;
 }
 
-export default function WeekView({ currentDate, events, onEventClick, onTimeClick }: WeekViewProps) {
+export default function WeekView({ currentDate, events, onEventClick, onTimeClick, onDateChange }: WeekViewProps) {
   const getWeekDays = (date: Date) => {
     const days = [];
     const current = new Date(date);
@@ -36,6 +37,22 @@ export default function WeekView({ currentDate, events, onEventClick, onTimeClic
 
   const hours = Array.from({ length: 24 }, (_, i) => i);
   const weekDays = getWeekDays(currentDate);
+
+  const handlePreviousWeek = () => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() - 7);
+    onDateChange?.(newDate);
+  };
+
+  const handleNextWeek = () => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() + 7);
+    onDateChange?.(newDate);
+  };
+
+  const handleThisWeek = () => {
+    onDateChange?.(new Date());
+  };
 
   const getEventsForDateTime = (date: Date, hour: number) => {
     return events.filter(event => {
@@ -64,13 +81,22 @@ export default function WeekView({ currentDate, events, onEventClick, onTimeClic
           Hafta Görünümü
         </h2>
         <div className="flex gap-2">
-          <button className="px-4 py-2 rounded-lg bg-[var(--background-tertiary)] hover:bg-[var(--border)] transition-colors">
+          <button 
+            onClick={handlePreviousWeek}
+            className="px-4 py-2 rounded-lg bg-[var(--background-tertiary)] hover:bg-[var(--border)] transition-colors"
+          >
             ← Önceki Hafta
           </button>
-          <button className="px-4 py-2 rounded-lg bg-[var(--background-tertiary)] hover:bg-[var(--border)] transition-colors">
+          <button 
+            onClick={handleThisWeek}
+            className="px-4 py-2 rounded-lg bg-[var(--background-tertiary)] hover:bg-[var(--border)] transition-colors"
+          >
             Bu Hafta
           </button>
-          <button className="px-4 py-2 rounded-lg bg-[var(--background-tertiary)] hover:bg-[var(--border)] transition-colors">
+          <button 
+            onClick={handleNextWeek}
+            className="px-4 py-2 rounded-lg bg-[var(--background-tertiary)] hover:bg-[var(--border)] transition-colors"
+          >
             Sonraki Hafta →
           </button>
         </div>

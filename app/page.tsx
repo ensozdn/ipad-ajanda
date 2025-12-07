@@ -280,6 +280,7 @@ export default function Home() {
             events={events}
             onEventClick={handleEventClick}
             onTimeClick={handleWeekTimeClick}
+            onDateChange={setCurrentDate}
           />
         )}
 
