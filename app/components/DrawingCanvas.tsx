@@ -1403,12 +1403,33 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
 
       {/* Fotoğraf Yerleştirme Modal */}
       {selectedImage && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-2xl p-4 z-50 flex gap-3">
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-2xl p-4 z-50 flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-bold text-gray-900">Boyut:</label>
+            <input
+              type="range"
+              min="50"
+              max="600"
+              value={selectedImage.width}
+              onChange={(e) => {
+                const newWidth = Number(e.target.value);
+                const ratio = selectedImage.img.height / selectedImage.img.width;
+                setSelectedImage({
+                  ...selectedImage,
+                  width: newWidth,
+                  height: newWidth * ratio
+                });
+              }}
+              className="w-40 h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
+            />
+            <span className="text-sm font-semibold text-gray-700 min-w-12">{Math.round(selectedImage.width)}px</span>
+          </div>
+          
           <button
             onClick={placeImage}
-            className="px-6 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors font-medium"
+            className="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors font-medium"
           >
-            Fotoğrafı Yapıştır
+            Yapıştır
           </button>
           <button
             onClick={() => { setSelectedImage(null); setTool('pen'); }}
