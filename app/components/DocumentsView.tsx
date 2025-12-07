@@ -17,6 +17,7 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
   const [isCreating, setIsCreating] = useState(false);
   const [showBackgroundModal, setShowBackgroundModal] = useState(false);
   const [selectedBackground, setSelectedBackground] = useState<BackgroundType>('plain');
+  const [filterMode, setFilterMode] = useState<'all' | 'favorites'>('all');
 
   const handleCreateNew = () => {
     setShowBackgroundModal(true);
@@ -67,6 +68,16 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
     }
   };
 
+  const handleToggleFavorite = (doc: Document, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updatedDoc = {
+      ...doc,
+      isFavorite: !doc.isFavorite,
+      updatedAt: new Date(),
+    };
+    onSaveDocument(updatedDoc);
+  };
+
   const handleBack = () => {
     if (isCreating && !selectedDocument?.imageData) {
       // Yeni belge oluşturulurken geri dönülürse kaydetme
@@ -77,6 +88,13 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
     setSelectedDocument(null);
     setIsCreating(false);
   };
+
+  // Filtrelenmiş notları al
+  const filteredDocuments = filterMode === 'favorites' 
+    ? documents.filter(doc => doc.isFavorite)
+    : documents;
+
+  const favoriteCount = documents.filter(doc => doc.isFavorite).length;
 
   // Çizim modunda
   if (selectedDocument || isCreating) {
@@ -128,6 +146,33 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
         </button>
       </div>
 
+      {/* Filter Tabs */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => setFilterMode('all')}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            filterMode === 'all'
+              ? 'bg-[var(--accent)] text-white'
+              : 'bg-[var(--background-secondary)] hover:bg-[var(--background-tertiary)]'
+          }`}
+        >
+          Tüm Notlar ({documents.length})
+        </button>
+        <button
+          onClick={() => setFilterMode('favorites')}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+            filterMode === 'favorites'
+              ? 'bg-[var(--accent)] text-white'
+              : 'bg-[var(--background-secondary)] hover:bg-[var(--background-tertiary)]'
+          }`}
+        >
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          </svg>
+          Favorilerim ({favoriteCount})
+        </button>
+      </div>
+
       {/* Sayfa Türü Seçim Modal */}
       {showBackgroundModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowBackgroundModal(false)}>
@@ -168,22 +213,25 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
         </div>
       )}
 
-      {documents.length === 0 ? (
+      {filteredDocuments.length === 0 ? (
         <div className="text-center py-20">
           <p className="text-[var(--foreground-secondary)] text-lg">
-            Henüz not oluşturmadınız
+            {filterMode === 'favorites' 
+              ? 'Henüz favori notunuz yok'
+              : 'Henüz not oluşturmadınız'
+            }
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {documents.map((doc) => (
+          {filteredDocuments.map((doc) => (
             <div
               key={doc.id}
               className="bg-[var(--background-secondary)] rounded-lg border border-[var(--border)] hover:border-[var(--accent)] transition-colors cursor-pointer"
             >
               <div
                 onClick={() => handleOpenDocument(doc)}
-                className="aspect-square bg-white rounded-t-lg overflow-hidden"
+                className="aspect-square bg-white rounded-t-lg overflow-hidden relative group"
               >
                 {doc.imageData ? (
                   <img
@@ -196,6 +244,27 @@ export default function DocumentsView({ documents, onSaveDocument, onDeleteDocum
                     Boş Not
                   </div>
                 )}
+                
+                {/* Favori butonu - hover'da görünür */}
+                <button
+                  onClick={(e) => handleToggleFavorite(doc, e)}
+                  className="absolute top-2 right-2 p-2 rounded-full bg-white/90 hover:bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  title={doc.isFavorite ? 'Favorilerden çıkar' : 'Favorilere ekle'}
+                >
+                  <svg 
+                    className={`w-5 h-5 ${doc.isFavorite ? 'text-yellow-500' : 'text-gray-400'}`} 
+                    fill={doc.isFavorite ? 'currentColor' : 'none'}
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" 
+                    />
+                  </svg>
+                </button>
               </div>
               <div className="p-3">
                 <input

@@ -20,4 +20,5 @@ export interface Document {
   updatedAt: Date;
   imageData: string; // base64 encoded canvas data
   background?: 'plain' | 'lined' | 'grid'; // Sayfa türü
+  isFavorite?: boolean; // Favori mi?
 }
