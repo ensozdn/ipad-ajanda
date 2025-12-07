@@ -29,6 +29,8 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   // Şekil özellikleri
   const [fillShape, setFillShape] = useState(false); // Dolu/boş şekil
   const [lineStyle, setLineStyle] = useState<'solid' | 'dashed' | 'dotted'>('solid'); // Çizgi stili
+  const [showToolMenu, setShowToolMenu] = useState(false); // Araç menüsü
+  const [showShapeMenu, setShowShapeMenu] = useState(false); // Şekil menüsü
   
   // Şekil çizimi için
   const [startPoint, setStartPoint] = useState<{ x: number; y: number } | null>(null);
@@ -694,193 +696,260 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
 
   return (
     <div className="fixed inset-0 flex flex-col bg-[#f5f5f5]">
-      {/* Toolbar - GoodNotes style */}
-      <div className="flex items-center justify-between bg-white border-b border-gray-200 px-4 py-2 shadow-sm">
-        {/* Sol taraf - Araçlar */}
-        <div className="flex items-center gap-3">
-          {/* Kalem/Silgi/Highlighter */}
-          <button
-            onClick={() => setTool('pen')}
-            className={`p-2 rounded-lg transition-colors ${
-              tool === 'pen' 
-                ? 'bg-blue-100 text-blue-600' 
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-            title="Kalem"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-            </svg>
-          </button>
-          
-          <button
-            onClick={() => setTool('highlighter')}
-            className={`p-2 rounded-lg transition-colors ${
-              tool === 'highlighter' 
-                ? 'bg-yellow-100 text-yellow-600' 
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-            title="Fosforlu Kalem"
-          >
-            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M18.5 1.15c-.53 0-1.04.21-1.41.59l-8.84 8.84c-.37.37-.59.88-.59 1.41 0 .53.21 1.04.59 1.41l2.83 2.83c.78.78 2.05.78 2.83 0l8.84-8.84c.37-.37.59-.88.59-1.41 0-.53-.21-1.04-.59-1.41l-2.83-2.83c-.37-.38-.88-.59-1.42-.59M7 14l-5 2 3 3 2-5m12.5-11.85c.4 0 .77.16 1.06.44l2.83 2.83c.28.29.44.66.44 1.06 0 .4-.16.77-.44 1.06l-8.84 8.84c-.58.58-1.54.58-2.12 0L9.6 13.55c-.28-.29-.44-.66-.44-1.06 0-.4.16-.77.44-1.06l8.84-8.84c.29-.28.66-.44 1.06-.44z" opacity="0.5"/>
-            </svg>
-          </button>
-          
-          <button
-            onClick={() => setTool('eraser')}
-            className={`p-2 rounded-lg transition-colors ${
-              tool === 'eraser' 
-                ? 'bg-blue-100 text-blue-600' 
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-            title="Silgi"
-          >
-            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M16.24 3.56l4.95 4.94c.78.79.78 2.05 0 2.84L12 20.53a4.008 4.008 0 0 1-5.66 0L2.81 17c-.78-.79-.78-2.05 0-2.84l10.6-10.6c.79-.78 2.05-.78 2.83 0M4.22 15.58l3.54 3.53c.78.79 2.04.79 2.83 0l3.53-3.53-6.36-6.36-3.54 3.53c-.78.79-.78 2.05 0 2.83z"/>
-            </svg>
-          </button>
+      {/* Toolbar - Modern & Compact */}
+      <div className="flex items-center justify-between bg-white border-b border-gray-200 px-4 py-3 shadow-sm">
+        {/* Sol taraf - Ana Araçlar */}
+        <div className="flex items-center gap-2">
+          {/* Çizim Araçları Grubu */}
+          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setTool('pen')}
+              className={`p-2 rounded-md transition-all ${
+                tool === 'pen' 
+                  ? 'bg-white text-blue-600 shadow-sm' 
+                  : 'text-gray-600 hover:bg-white/50'
+              }`}
+              title="Kalem"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            </button>
+            
+            <button
+              onClick={() => setTool('highlighter')}
+              className={`p-2 rounded-md transition-all ${
+                tool === 'highlighter' 
+                  ? 'bg-white text-yellow-600 shadow-sm' 
+                  : 'text-gray-600 hover:bg-white/50'
+              }`}
+              title="Fosforlu Kalem"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18.5 1.15c-.53 0-1.04.21-1.41.59l-8.84 8.84c-.37.37-.59.88-.59 1.41 0 .53.21 1.04.59 1.41l2.83 2.83c.78.78 2.05.78 2.83 0l8.84-8.84c.37-.37.59-.88.59-1.41 0-.53-.21-1.04-.59-1.41l-2.83-2.83c-.37-.38-.88-.59-1.42-.59" opacity="0.7"/>
+              </svg>
+            </button>
+            
+            <button
+              onClick={() => setTool('eraser')}
+              className={`p-2 rounded-md transition-all ${
+                tool === 'eraser' 
+                  ? 'bg-white text-blue-600 shadow-sm' 
+                  : 'text-gray-600 hover:bg-white/50'
+              }`}
+              title="Silgi"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M16.24 3.56l4.95 4.94c.78.79.78 2.05 0 2.84L12 20.53a4.008 4.008 0 0 1-5.66 0L2.81 17c-.78-.79-.78-2.05 0-2.84l10.6-10.6c.79-.78 2.05-.78 2.83 0"/>
+              </svg>
+            </button>
+          </div>
 
-          <div className="w-px h-6 bg-gray-300" />
-
-          {/* Şekil Araçları */}
-          <button
-            onClick={() => setTool('line')}
-            className={`p-2 rounded-lg transition-colors ${
-              tool === 'line' 
-                ? 'bg-blue-100 text-blue-600' 
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-            title="Çizgi"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 20 L20 4" />
-            </svg>
-          </button>
-          
-          <button
-            onClick={() => setTool('rectangle')}
-            className={`p-2 rounded-lg transition-colors ${
-              tool === 'rectangle' 
-                ? 'bg-blue-100 text-blue-600' 
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-            title="Dikdörtgen"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <rect x="3" y="5" width="18" height="14" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-          
-          <button
-            onClick={() => setTool('circle')}
-            className={`p-2 rounded-lg transition-colors ${
-              tool === 'circle' 
-                ? 'bg-blue-100 text-blue-600' 
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-            title="Daire"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="9" strokeWidth={2} />
-            </svg>
-          </button>
-          
-          <button
-            onClick={() => setTool('arrow')}
-            className={`p-2 rounded-lg transition-colors ${
-              tool === 'arrow' 
-                ? 'bg-blue-100 text-blue-600' 
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-            title="Ok"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </button>
-
-          <div className="w-px h-6 bg-gray-300" />
-
-          {/* Şekil özellikleri (sadece şekil araçları aktifken) */}
-          {['line', 'rectangle', 'circle', 'arrow'].includes(tool) && (
-            <>
-              {/* Dolu/Boş (dikdörtgen ve daire için) */}
-              {['rectangle', 'circle'].includes(tool) && (
-                <button
-                  onClick={() => setFillShape(!fillShape)}
-                  className={`p-2 rounded-lg transition-colors ${
-                    fillShape
-                      ? 'bg-blue-100 text-blue-600'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                  title={fillShape ? 'Boş Şekil' : 'Dolu Şekil'}
-                >
-                  <svg className="w-6 h-6" fill={fillShape ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                    <rect x="4" y="4" width="16" height="16" strokeWidth={2} />
-                  </svg>
-                </button>
+          {/* Şekil Araçları - Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowShapeMenu(!showShapeMenu)}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
+                ['line', 'rectangle', 'circle', 'arrow'].includes(tool)
+                  ? 'bg-blue-100 text-blue-600'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+              title="Şekiller"
+            >
+              {tool === 'line' && (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 20 L20 4" />
+                </svg>
               )}
+              {tool === 'rectangle' && (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <rect x="3" y="5" width="18" height="14" strokeWidth={2} />
+                </svg>
+              )}
+              {tool === 'circle' && (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="9" strokeWidth={2} />
+                </svg>
+              )}
+              {tool === 'arrow' && (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              )}
+              {!['line', 'rectangle', 'circle', 'arrow'].includes(tool) && (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <rect x="3" y="5" width="18" height="14" strokeWidth={2} />
+                </svg>
+              )}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
 
-              {/* Çizgi Stili */}
-              <div className="flex gap-1">
+            {/* Şekil Dropdown Menu */}
+            {showShapeMenu && (
+              <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 p-2 z-50 min-w-[200px]">
                 <button
-                  onClick={() => setLineStyle('solid')}
-                  className={`px-3 py-2 rounded-lg transition-colors ${
-                    lineStyle === 'solid'
-                      ? 'bg-blue-100 text-blue-600'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                  title="Düz Çizgi"
+                  onClick={() => { setTool('line'); setShowShapeMenu(false); }}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <line x1="4" y1="12" x2="20" y2="12" strokeWidth={2} />
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 20 L20 4" />
                   </svg>
+                  <span>Çizgi</span>
                 </button>
                 <button
-                  onClick={() => setLineStyle('dashed')}
-                  className={`px-3 py-2 rounded-lg transition-colors ${
-                    lineStyle === 'dashed'
-                      ? 'bg-blue-100 text-blue-600'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                  title="Kesikli Çizgi"
+                  onClick={() => { setTool('rectangle'); setShowShapeMenu(false); }}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <line x1="4" y1="12" x2="20" y2="12" strokeWidth={2} strokeDasharray="4 2" />
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="3" y="5" width="18" height="14" strokeWidth={2} />
                   </svg>
+                  <span>Dikdörtgen</span>
                 </button>
                 <button
-                  onClick={() => setLineStyle('dotted')}
-                  className={`px-3 py-2 rounded-lg transition-colors ${
-                    lineStyle === 'dotted'
-                      ? 'bg-blue-100 text-blue-600'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                  title="Noktalı Çizgi"
+                  onClick={() => { setTool('circle'); setShowShapeMenu(false); }}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <line x1="4" y1="12" x2="20" y2="12" strokeWidth={2} strokeDasharray="1 3" />
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="9" strokeWidth={2} />
                   </svg>
+                  <span>Daire</span>
                 </button>
+                <button
+                  onClick={() => { setTool('arrow'); setShowShapeMenu(false); }}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                  <span>Ok</span>
+                </button>
+
+                {/* Şekil Özellikleri */}
+                {['rectangle', 'circle'].includes(tool) && (
+                  <>
+                    <div className="h-px bg-gray-200 my-2"></div>
+                    <button
+                      onClick={() => setFillShape(!fillShape)}
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
+                    >
+                      <svg className="w-5 h-5" fill={fillShape ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                        <rect x="4" y="4" width="16" height="16" strokeWidth={2} />
+                      </svg>
+                      <span>{fillShape ? 'Boş Şekil' : 'Dolu Şekil'}</span>
+                    </button>
+                  </>
+                )}
+
+                {/* Çizgi Stili */}
+                <div className="h-px bg-gray-200 my-2"></div>
+                <div className="px-2 py-1 text-xs text-gray-500 font-medium">Çizgi Stili</div>
+                <div className="flex gap-1 p-1">
+                  <button
+                    onClick={() => setLineStyle('solid')}
+                    className={`flex-1 p-2 rounded-md transition-colors ${
+                      lineStyle === 'solid' ? 'bg-blue-100' : 'hover:bg-gray-100'
+                    }`}
+                    title="Düz"
+                  >
+                    <svg className="w-full h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <line x1="2" y1="12" x2="22" y2="12" strokeWidth={2} />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setLineStyle('dashed')}
+                    className={`flex-1 p-2 rounded-md transition-colors ${
+                      lineStyle === 'dashed' ? 'bg-blue-100' : 'hover:bg-gray-100'
+                    }`}
+                    title="Kesikli"
+                  >
+                    <svg className="w-full h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <line x1="2" y1="12" x2="22" y2="12" strokeWidth={2} strokeDasharray="4 2" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setLineStyle('dotted')}
+                    className={`flex-1 p-2 rounded-md transition-colors ${
+                      lineStyle === 'dotted' ? 'bg-blue-100' : 'hover:bg-gray-100'
+                    }`}
+                    title="Noktalı"
+                  >
+                    <svg className="w-full h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <line x1="2" y1="12" x2="22" y2="12" strokeWidth={2} strokeDasharray="1 3" />
+                    </svg>
+                  </button>
+                </div>
               </div>
+            )}
+          </div>
 
-              <div className="w-px h-6 bg-gray-300" />
-            </>
-          )}
+          {/* Renk Seçici - Kompakt */}
+          <div className="relative">
+            <button 
+              className="w-10 h-10 rounded-lg border-2 border-gray-300 shadow-sm hover:border-gray-400 transition-colors"
+              style={{ backgroundColor: color }}
+              onClick={() => setShowColorPicker(!showColorPicker)}
+              title="Renk"
+            />
+            
+            {showColorPicker && (
+              <div className="absolute top-full left-0 mt-1 bg-white p-3 rounded-lg shadow-xl border z-50">
+                <div className="grid grid-cols-5 gap-2 mb-3">
+                  {colors.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setColor(c)}
+                      className={`w-8 h-8 rounded-md border-2 transition-all ${
+                        color === c ? 'border-blue-500 scale-110' : 'border-gray-300 hover:scale-105'
+                      }`}
+                      style={{ backgroundColor: c }}
+                    />
+                  ))}
+                </div>
+                <input
+                  type="color"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                  className="w-full h-8 rounded cursor-pointer"
+                />
+              </div>
+            )}
+          </div>
 
-          {/* Undo/Redo */}
+          {/* Kalınlık Slider - Kompakt */}
+          <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2">
+            <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="2" />
+            </svg>
+            <input
+              type="range"
+              min="1"
+              max="20"
+              value={lineWidth}
+              onChange={(e) => setLineWidth(Number(e.target.value))}
+              className="w-24 h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer"
+              style={{
+                background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${(lineWidth / 20) * 100}%, #d1d5db ${(lineWidth / 20) * 100}%, #d1d5db 100%)`
+              }}
+            />
+            <span className="text-sm font-medium text-gray-600 w-6">{lineWidth}</span>
+          </div>
+        </div>
+
+        {/* Orta - Undo/Redo */}
+        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
           <button
             onClick={undo}
             disabled={historyStep <= 0}
-            className={`p-2 rounded-lg transition-colors ${
+            className={`p-2 rounded-md transition-all ${
               historyStep <= 0
                 ? 'text-gray-300 cursor-not-allowed'
-                : 'text-gray-600 hover:bg-gray-100'
+                : 'text-gray-600 hover:bg-white/50'
             }`}
             title="Geri Al (Ctrl+Z)"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
             </svg>
           </button>
@@ -888,104 +957,24 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
           <button
             onClick={redo}
             disabled={historyStep >= history.length - 1}
-            className={`p-2 rounded-lg transition-colors ${
+            className={`p-2 rounded-md transition-all ${
               historyStep >= history.length - 1
                 ? 'text-gray-300 cursor-not-allowed'
-                : 'text-gray-600 hover:bg-gray-100'
+                : 'text-gray-600 hover:bg-white/50'
             }`}
             title="İleri Al (Ctrl+Y)"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10h-10a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6" />
             </svg>
           </button>
-
-          <div className="w-px h-6 bg-gray-300" />
-
-          {/* Renkler */}
-          <div className="flex gap-1 items-center">
-            {/* Aktif renk göstergesi */}
-            <div 
-              className="w-8 h-8 rounded-full border-2 border-gray-400 shadow-sm cursor-pointer"
-              style={{ backgroundColor: color }}
-              onClick={() => setShowColorPicker(!showColorPicker)}
-              title="Renk Seçici"
-            />
-            
-            {/* Renk paleti */}
-            {(tool === 'highlighter' ? highlighterColors : colors.slice(0, 10)).map((c) => (
-              <button
-                key={c}
-                onClick={() => setColor(c)}
-                className={`w-6 h-6 rounded-full border-2 transition-all ${
-                  color === c ? 'border-blue-500 scale-110' : 'border-gray-300'
-                }`}
-                style={{ backgroundColor: c }}
-                title={c}
-              />
-            ))}
-            
-            {/* Custom renk seçici */}
-            {showColorPicker && (
-              <div className="absolute top-14 left-36 bg-white p-3 rounded-lg shadow-xl border z-50">
-                <div className="flex flex-col gap-2">
-                  <input
-                    type="color"
-                    value={color}
-                    onChange={(e) => setColor(e.target.value)}
-                    className="w-32 h-32 cursor-pointer"
-                  />
-                  <button
-                    onClick={() => setShowColorPicker(false)}
-                    className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
-                  >
-                    Tamam
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="w-px h-6 bg-gray-300" />
-
-          {/* Kalınlık - Görsel önizleme ile */}
-          <div className="flex items-center gap-3">
-            <div className="flex flex-col items-center gap-1">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-500">İnce</span>
-                <input
-                  type="range"
-                  min="1"
-                  max="20"
-                  value={lineWidth}
-                  onChange={(e) => setLineWidth(Number(e.target.value))}
-                  className="w-24"
-                />
-                <span className="text-xs text-gray-500">Kalın</span>
-              </div>
-              {/* Kalınlık önizlemesi */}
-              <div className="flex items-center justify-center h-6">
-                <div
-                  className="rounded-full"
-                  style={{
-                    width: `${lineWidth * 2}px`,
-                    height: `${lineWidth * 2}px`,
-                    backgroundColor: tool === 'eraser' ? '#e5e7eb' : color,
-                    opacity: tool === 'highlighter' ? 0.5 : 1,
-                    maxWidth: '40px',
-                    maxHeight: '40px'
-                  }}
-                />
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Orta - Arka plan */}
-        <div className="flex gap-2">
+        {/* Sağ taraf - Aksiyonlar */}
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setBackground('plain')}
-            className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+            className={`px-2 py-1 text-xs rounded-md transition-colors ${
               background === 'plain' 
                 ? 'bg-blue-500 text-white' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -995,7 +984,7 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
           </button>
           <button
             onClick={() => setBackground('lined')}
-            className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+            className={`px-2 py-1 text-xs rounded-md transition-colors ${
               background === 'lined' 
                 ? 'bg-blue-500 text-white' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -1005,7 +994,7 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
           </button>
           <button
             onClick={() => setBackground('grid')}
-            className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+            className={`px-2 py-1 text-xs rounded-md transition-colors ${
               background === 'grid' 
                 ? 'bg-blue-500 text-white' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -1013,19 +1002,18 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
           >
             Kareli
           </button>
-        </div>
 
-        {/* Sağ taraf - Aksiyonlar */}
-        <div className="flex gap-2">
+          <div className="w-px h-8 bg-gray-300 mx-2" />
+
           <button
             onClick={clearCanvas}
-            className="px-4 py-1.5 text-sm rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
+            className="px-3 py-1.5 text-sm rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
           >
             Temizle
           </button>
           <button
             onClick={exportAsPNG}
-            className="px-4 py-1.5 text-sm rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors flex items-center gap-1"
+            className="px-3 py-1.5 text-sm rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors flex items-center gap-1"
             title="PNG olarak indir"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1035,7 +1023,7 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
           </button>
           <button
             onClick={exportAsPDF}
-            className="px-4 py-1.5 text-sm rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors flex items-center gap-1"
+            className="px-3 py-1.5 text-sm rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors flex items-center gap-1"
             title="PDF olarak indir"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1045,7 +1033,7 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-1.5 text-sm rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors"
+            className="px-4 py-1.5 text-sm rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors font-medium"
           >
             Kaydet
           </button>
