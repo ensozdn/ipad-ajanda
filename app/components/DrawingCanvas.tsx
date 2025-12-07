@@ -4,6 +4,12 @@ import { useRef, useEffect, useState } from 'react';
 
 type BackgroundType = 'plain' | 'lined' | 'grid';
 
+interface Page {
+  id: string;
+  imageData: string;
+  background: BackgroundType;
+}
+
 interface DrawingCanvasProps {
   onSave: (imageData: string) => void;
   initialData?: string;
@@ -25,6 +31,10 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   const [originX, setOriginX] = useState(50); // Transform origin X (%)
   const [originY, setOriginY] = useState(50); // Transform origin Y (%)
   const [showColorPicker, setShowColorPicker] = useState(false);
+  
+  // Çoklu sayfa
+  const [pages, setPages] = useState<Page[]>([{ id: '1', imageData: '', background: initialBackground }]);
+  const [currentPageIndex, setCurrentPageIndex] = useState(0);
   
   // Şekil özellikleri
   const [fillShape, setFillShape] = useState(false); // Dolu/boş şekil
@@ -580,6 +590,87 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
     saveToHistory();
   };
 
+  // Sayfa fonksiyonları
+  const saveCurrentPage = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const imageData = canvas.toDataURL('image/png');
+    const updatedPages = [...pages];
+    updatedPages[currentPageIndex] = {
+      ...updatedPages[currentPageIndex],
+      imageData,
+      background
+    };
+    setPages(updatedPages);
+  };
+
+  const loadPage = (index: number) => {
+    const canvas = canvasRef.current;
+    if (!canvas || index < 0 || index >= pages.length) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Mevcut sayfayı kaydet
+    saveCurrentPage();
+
+    // Yeni sayfayı yükle
+    const page = pages[index];
+    setCurrentPageIndex(index);
+    setBackground(page.background);
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    if (page.imageData) {
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0);
+        saveToHistory();
+      };
+      img.src = page.imageData;
+    } else {
+      saveToHistory();
+    }
+  };
+
+  const addNewPage = () => {
+    saveCurrentPage();
+    const newPage: Page = {
+      id: Date.now().toString(),
+      imageData: '',
+      background: 'plain'
+    };
+    setPages([...pages, newPage]);
+    setCurrentPageIndex(pages.length);
+    setBackground('plain');
+    
+    // Canvas'ı temizle
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        saveToHistory();
+      }
+    }
+  };
+
+  const deletePage = (index: number) => {
+    if (pages.length <= 1) return; // En az 1 sayfa olmalı
+
+    const updatedPages = pages.filter((_, i) => i !== index);
+    setPages(updatedPages);
+    
+    // Eğer silinen sayfa aktif sayfaysa, bir öncekine git
+    if (index === currentPageIndex) {
+      const newIndex = Math.max(0, index - 1);
+      loadPage(newIndex);
+    } else if (index < currentPageIndex) {
+      setCurrentPageIndex(currentPageIndex - 1);
+    }
+  };
+
   const drawText = (text: string, x: number, y: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -603,11 +694,14 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
   };
 
   const handleSave = () => {
+    // Önce mevcut sayfayı kaydet
+    saveCurrentPage();
+    
     const canvas = canvasRef.current;
     const bgCanvas = backgroundCanvasRef.current;
     if (!canvas || !bgCanvas) return;
 
-    // Geçici canvas oluştur - arka plan + çizim birleştir
+    // İlk sayfayı kaydet (şimdilik tek sayfa gösteriyoruz)
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = canvas.width;
     tempCanvas.height = canvas.height;
@@ -1015,6 +1109,65 @@ export default function DrawingCanvas({ onSave, initialData, initialBackground =
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10h-10a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6" />
             </svg>
           </button>
+        </div>
+
+        {/* Sayfa Navigasyonu */}
+        <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+          <button
+            onClick={() => loadPage(currentPageIndex - 1)}
+            disabled={currentPageIndex === 0}
+            className={`p-2 rounded-md transition-all ${
+              currentPageIndex === 0
+                ? 'text-gray-300 cursor-not-allowed'
+                : 'text-gray-600 hover:bg-white/50'
+            }`}
+            title="Önceki Sayfa"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          
+          <span className="text-sm font-medium text-gray-700 px-2">
+            {currentPageIndex + 1} / {pages.length}
+          </span>
+          
+          <button
+            onClick={() => loadPage(currentPageIndex + 1)}
+            disabled={currentPageIndex === pages.length - 1}
+            className={`p-2 rounded-md transition-all ${
+              currentPageIndex === pages.length - 1
+                ? 'text-gray-300 cursor-not-allowed'
+                : 'text-gray-600 hover:bg-white/50'
+            }`}
+            title="Sonraki Sayfa"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+          
+          <button
+            onClick={addNewPage}
+            className="p-2 rounded-md text-blue-600 hover:bg-white/50 transition-all"
+            title="Yeni Sayfa Ekle"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
+          
+          {pages.length > 1 && (
+            <button
+              onClick={() => deletePage(currentPageIndex)}
+              className="p-2 rounded-md text-red-600 hover:bg-white/50 transition-all"
+              title="Bu Sayfayı Sil"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          )}
         </div>
 
         {/* Sağ taraf - Aksiyonlar */}
