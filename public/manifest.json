@@ -1,0 +1,30 @@
+{
+  "name": "Melikenin Ajandası",
+  "short_name": "Ajanda",
+  "description": "Kişisel ajanda ve not uygulaması",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1f2e",
+  "theme_color": "#6366f1",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon?size=192",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon?size=512",
+      "sizes": "512x512", 
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-icon",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["productivity", "lifestyle"]
+}
