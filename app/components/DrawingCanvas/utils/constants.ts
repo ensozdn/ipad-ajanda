@@ -30,4 +30,4 @@ export const CANVAS_HEIGHT = 1000;
 export const MAX_HISTORY_STEPS = 50;
 export const MIN_ZOOM = 0.7;
 export const MAX_ZOOM = 2;
-export const ZOOM_SENSITIVITY = 0.007;
+export const ZOOM_SENSITIVITY = 0.009;
