@@ -1,6 +1,7 @@
-  // Zoom ve çizim çakışmasını önlemek için
-  const [isZooming, setIsZooming] = useState(false);
+
 'use client';
+
+
 
 import { useRef, useEffect, useState } from 'react';
 import { BackgroundType } from './types';
@@ -30,6 +31,8 @@ export default function DrawingCanvas({
   initialData, 
   initialBackground = 'plain' 
 }: DrawingCanvasProps) {
+  // Zoom ve çizim çakışmasını önlemek için
+  const [isZooming, setIsZooming] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Canvas setup
