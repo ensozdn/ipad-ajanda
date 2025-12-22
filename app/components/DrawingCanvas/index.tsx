@@ -253,20 +253,30 @@ export default function DrawingCanvas({
       y = (e.clientY - rect.top) * scaleY;
     }
 
-    // Text tool - Önce var olan metne tıklandı mı kontrol et
-    if (tool === 'text') {
-      if (handleTextClick(x, y)) {
-        e.preventDefault(); // Çizim yapılmasını engelle
-        return;
-      }
+    // ÖNCELİK 1: Var olan fotoğrafa tıklandı mı kontrol et (TOOL'DAN BAĞIMSIZ)
+    // Bu sayede herhangi bir tool seçiliyken bile fotoğraf sürüklenebilir
+    if (handleImageClick(x, y)) {
+      e.preventDefault(); // Çizim yapılmasını engelle
+      return;
     }
 
-    // Image tool - Önce var olan fotoğrafa tıklandı mı kontrol et
+    // ÖNCELİK 2: Var olan metne tıklandı mı kontrol et (TOOL'DAN BAĞIMSIZ)
+    // Bu sayede herhangi bir tool seçiliyken bile metin sürüklenebilir
+    if (handleTextClick(x, y)) {
+      e.preventDefault(); // Çizim yapılmasını engelle
+      return;
+    }
+
+    // ÖNCELİK 3: Text tool - Yeni metin ekle
+    if (tool === 'text') {
+      // handleTextClick yukarıda çağrıldı ve false döndü, yani yeni metin ekleniyor
+      // handleTextClick içinde zaten yeni metin ekleme var
+      return;
+    }
+
+    // ÖNCELİK 4: Image tool - Fotoğraf ekleme file input ile yapılıyor
     if (tool === 'image') {
-      if (handleImageClick(x, y)) {
-        e.preventDefault(); // Çizim yapılmasını engelle
-        return;
-      }
+      return;
     }
 
     // Eraser - metin/fotoğraf silme
@@ -274,8 +284,10 @@ export default function DrawingCanvas({
       if (deleteTextAtPosition(x, y)) return;
     }
 
-    // Normal çizim (sadece text/image tool değilse veya yeni ekleme yapılıyorsa)
-    if (tool !== 'text' && tool !== 'image') {
+    // Normal çizim (text ve image tool'ları dışında)
+    // Text ve image tool'larında çizim yapılmaz
+    const drawingTools = ['pen', 'highlighter', 'marker', 'pencil', 'crayon', 'line', 'rectangle', 'circle', 'arrow', 'eraser'];
+    if (drawingTools.includes(tool as any)) {
       startDrawing(e);
     }
   };
@@ -314,8 +326,9 @@ export default function DrawingCanvas({
       return;
     }
 
-    // Normal çizim (sadece text/image tool değilse)
-    if (tool !== 'text' && tool !== 'image') {
+    // Normal çizim (text ve image tool'ları dışında)
+    const drawingTools = ['pen', 'highlighter', 'marker', 'pencil', 'crayon', 'line', 'rectangle', 'circle', 'arrow', 'eraser'];
+    if (drawingTools.includes(tool as any)) {
       draw(e);
     }
   };
