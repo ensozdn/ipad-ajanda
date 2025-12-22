@@ -214,6 +214,14 @@ export default function DrawingCanvas({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    // Eğer dokunuş ise: iki parmakla dokunma veya stylus (Apple Pencil) değilse çizim başlatma
+    if ('touches' in e) {
+      if (e.touches.length > 1) return; // 2+ parmak: zoom veya yanlışlıkla el teması, çizim yok
+      const touch = e.touches[0];
+      // Sadece stylus (Apple Pencil) ile çizime izin ver
+      if ((touch as any).touchType !== 'stylus') return;
+    }
+
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
