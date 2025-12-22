@@ -78,75 +78,83 @@ export default function Toolbar({
           <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
             <button
               onClick={() => setTool('pen')}
-              className={`p-2.5 rounded-md transition-all ${
-                tool === 'pen' ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-white'
-              }`}
+              className={`p-2.5 rounded-md transition-all ${tool === 'pen' ? 'bg-blue-500 text-white shadow-md' : 'text-gray-700 hover:bg-white'
+                }`}
               title="Normal Kalem"
             >
-              <img src="/pen-goodnotes.svg" alt="Kalem" className="w-5 h-5" />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
             </button>
             <button
               onClick={() => setTool('highlighter')}
-              className={`p-2.5 rounded-md transition-all ${
-                tool === 'highlighter' ? 'bg-yellow-400 text-white' : 'text-yellow-600 hover:bg-white'
-              }`}
-              title="Fosforlu"
+              className={`p-2.5 rounded-md transition-all ${tool === 'highlighter' ? 'bg-yellow-400 text-white shadow-md' : 'text-yellow-600 hover:bg-white'
+                }`}
+              title="Fosforlu Kalem"
             >
-              <img src="/highlighter-goodnotes.svg" alt="Fosforlu" className="w-5 h-5" />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" opacity="0.6" />
+              </svg>
             </button>
             <button
               onClick={() => setTool('marker')}
-              className={`p-2.5 rounded-md transition-all ${
-                tool === 'marker' ? 'bg-orange-500 text-white' : 'text-orange-600 hover:bg-white'
-              }`}
+              className={`p-2.5 rounded-md transition-all ${tool === 'marker' ? 'bg-orange-500 text-white shadow-md' : 'text-orange-600 hover:bg-white'
+                }`}
               title="Kalın Marker"
             >
-              <img src="/marker-goodnotes.svg" alt="Marker" className="w-5 h-5" />
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18.5 1.15L17 2.65l3.35 3.35 1.5-1.5c.59-.59.59-1.54 0-2.13L19.72 0.24c-.59-.59-1.54-.59-2.13 0zM0 20.02L18.5 1.5l3.35 3.35L3.37 23.37H0v-3.35z" />
+              </svg>
             </button>
             <button
               onClick={() => setTool('pencil')}
-              className={`p-2.5 rounded-md transition-all ${
-                tool === 'pencil' ? 'bg-amber-600 text-white' : 'text-amber-700 hover:bg-white'
-              }`}
-              title="İnce Kalem"
+              className={`p-2.5 rounded-md transition-all ${tool === 'pencil' ? 'bg-amber-600 text-white shadow-md' : 'text-amber-700 hover:bg-white'
+                }`}
+              title="İnce Kurşun Kalem"
             >
-              <img src="/pencil-goodnotes.svg" alt="İnce Kalem" className="w-5 h-5" />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
             </button>
             <button
               onClick={() => setTool('crayon')}
-              className={`p-2.5 rounded-md transition-all ${
-                tool === 'crayon' ? 'bg-red-500 text-white' : 'text-red-500 hover:bg-white'
-              }`}
-              title="Soft Pastel"
+              className={`p-2.5 rounded-md transition-all ${tool === 'crayon' ? 'bg-red-500 text-white shadow-md' : 'text-red-500 hover:bg-white'
+                }`}
+              title="Pastel Boya"
             >
-              <img src="/crayon-goodnotes.svg" alt="Soft Pastel" className="w-5 h-5" />
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20.71 4.63l-1.34-1.34c-.39-.39-1.02-.39-1.41 0L9 12.25 11.75 15l8.96-8.96c.39-.39.39-1.02 0-1.41zM7 14c-1.66 0-3 1.34-3 3 0 1.31-1.16 2-2 2 .92 1.22 2.49 2 4 2 2.21 0 4-1.79 4-4 0-1.66-1.34-3-3-3z" />
+              </svg>
             </button>
             <button
               onClick={() => setTool('eraser')}
-              className={`p-2.5 rounded-md transition-all ${
-                tool === 'eraser' ? 'bg-purple-600 text-white' : 'text-purple-700 hover:bg-white'
-              }`}
+              className={`p-2.5 rounded-md transition-all ${tool === 'eraser' ? 'bg-purple-600 text-white shadow-md' : 'text-purple-700 hover:bg-white'
+                }`}
               title="Silgi"
             >
-              <img src="/eraser-goodnotes.svg" alt="Silgi" className="w-5 h-5" />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
             </button>
             <button
               onClick={() => setTool('text')}
-              className={`p-2.5 rounded-md transition-all ${
-                tool === 'text' ? 'bg-green-600 text-white' : 'text-green-700 hover:bg-white'
-              }`}
-              title="Metin"
+              className={`p-2.5 rounded-md transition-all ${tool === 'text' ? 'bg-green-600 text-white shadow-md' : 'text-green-700 hover:bg-white'
+                }`}
+              title="Metin Ekle"
             >
-              <img src="/text-goodnotes.svg" alt="Metin" className="w-5 h-5" />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
             </button>
             <button
               onClick={onFileUpload}
-              className={`p-2.5 rounded-md transition-all ${
-                tool === 'image' ? 'bg-indigo-600 text-white' : 'text-indigo-700 hover:bg-white'
-              }`}
-              title="Fotoğraf"
+              className={`p-2.5 rounded-md transition-all ${tool === 'image' ? 'bg-indigo-600 text-white shadow-md' : 'text-indigo-700 hover:bg-white'
+                }`}
+              title="Fotoğraf Ekle"
             >
-              <img src="/image-goodnotes.svg" alt="Fotoğraf" className="w-5 h-5" />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
             </button>
           </div>
 
@@ -154,11 +162,10 @@ export default function Toolbar({
           <div className="relative">
             <button
               onClick={() => setShowShapeMenu(!showShapeMenu)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
-                ['line', 'rectangle', 'circle', 'arrow'].includes(tool)
-                  ? 'bg-blue-100 text-blue-600'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${['line', 'rectangle', 'circle', 'arrow'].includes(tool)
+                ? 'bg-blue-100 text-blue-600'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
               title="Şekiller"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -172,7 +179,7 @@ export default function Toolbar({
 
           {/* Renk Seçici */}
           <div className="relative">
-            <button 
+            <button
               className="w-10 h-10 rounded-lg border-2 border-gray-300 shadow-sm hover:border-gray-400 transition-colors"
               style={{ backgroundColor: color }}
               onClick={() => setShowColorPicker(!showColorPicker)}
@@ -203,22 +210,24 @@ export default function Toolbar({
             <button
               onClick={onUndo}
               disabled={!canUndo}
-              className={`p-2 rounded-md ${
-                canUndo ? 'text-gray-700 hover:bg-white' : 'text-gray-300 cursor-not-allowed'
-              }`}
-              title="Geri Al"
+              className={`p-2 rounded-md transition-all ${canUndo ? 'text-gray-700 hover:bg-white hover:shadow-sm' : 'text-gray-300 cursor-not-allowed'
+                }`}
+              title="Geri Al (Ctrl+Z)"
             >
-              <img src="/undo-goodnotes.svg" alt="Geri Al" className="w-5 h-5" />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+              </svg>
             </button>
             <button
               onClick={onRedo}
               disabled={!canRedo}
-              className={`p-2 rounded-md ${
-                canRedo ? 'text-gray-700 hover:bg-white' : 'text-gray-300 cursor-not-allowed'
-              }`}
-              title="İleri Al"
+              className={`p-2 rounded-md transition-all ${canRedo ? 'text-gray-700 hover:bg-white hover:shadow-sm' : 'text-gray-300 cursor-not-allowed'
+                }`}
+              title="İleri Al (Ctrl+Y)"
             >
-              <img src="/redo-goodnotes.svg" alt="İleri Al" className="w-5 h-5" />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" />
+              </svg>
             </button>
           </div>
 
@@ -229,9 +238,8 @@ export default function Toolbar({
             <button
               onClick={onPrevPage}
               disabled={currentPage === 0}
-              className={`p-2 rounded-md ${
-                currentPage === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-white'
-              }`}
+              className={`p-2 rounded-md ${currentPage === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-white'
+                }`}
               title="Önceki Sayfa"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,29 +252,33 @@ export default function Toolbar({
             <button
               onClick={onNextPage}
               disabled={currentPage === totalPages - 1}
-              className={`p-2 rounded-md ${
-                currentPage === totalPages - 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-white'
-              }`}
+              className={`p-2 rounded-md ${currentPage === totalPages - 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-white'
+                }`}
               title="Sonraki Sayfa"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
+            <div className="w-px h-6 bg-gray-300 mx-1"></div>
             <button
               onClick={onAddPage}
-              className="p-2 rounded-md text-blue-600 hover:bg-white transition-all"
-              title="Yeni Sayfa"
+              className="p-2 rounded-md text-blue-600 hover:bg-white hover:shadow-sm transition-all"
+              title="Yeni Sayfa Ekle"
             >
-              <img src="/addpage-goodnotes.svg" alt="Yeni Sayfa" className="w-5 h-5" />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
             </button>
             {totalPages > 1 && (
               <button
                 onClick={onDeletePage}
-                className="p-2 rounded-md text-red-600 hover:bg-white transition-all"
+                className="p-2 rounded-md text-red-600 hover:bg-white hover:shadow-sm transition-all"
                 title="Bu Sayfayı Sil"
               >
-                <img src="/deletepage-goodnotes.svg" alt="Sayfa Sil" className="w-5 h-5" />
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
               </button>
             )}
           </div>
@@ -277,25 +289,22 @@ export default function Toolbar({
           <div className="flex items-center gap-1">
             <button
               onClick={() => setBackground('plain')}
-              className={`px-2 py-1 text-xs rounded-md transition-colors ${
-                background === 'plain' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              className={`px-2 py-1 text-xs rounded-md transition-colors ${background === 'plain' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
             >
               Düz
             </button>
             <button
               onClick={() => setBackground('lined')}
-              className={`px-2 py-1 text-xs rounded-md transition-colors ${
-                background === 'lined' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              className={`px-2 py-1 text-xs rounded-md transition-colors ${background === 'lined' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
             >
               Çizgili
             </button>
             <button
               onClick={() => setBackground('grid')}
-              className={`px-2 py-1 text-xs rounded-md transition-colors ${
-                background === 'grid' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              className={`px-2 py-1 text-xs rounded-md transition-colors ${background === 'grid' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
             >
               Kareli
             </button>
@@ -305,32 +314,42 @@ export default function Toolbar({
 
           <button
             onClick={onClear}
-            className="px-3 py-1.5 text-sm rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors flex items-center gap-1"
+            className="px-3 py-1.5 text-sm rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors flex items-center gap-1.5 shadow-sm"
+            title="Sayfayı Temizle"
           >
-            <img src="/clear-goodnotes.svg" alt="Temizle" className="w-4 h-4" />
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
             Temizle
           </button>
           <button
             onClick={onExportPNG}
-            className="px-3 py-1.5 text-sm rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors flex items-center gap-1"
+            className="px-3 py-1.5 text-sm rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors flex items-center gap-1.5 shadow-sm"
             title="PNG olarak indir"
           >
-            <img src="/png-goodnotes.svg" alt="PNG" className="w-4 h-4" />
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
             PNG
           </button>
           <button
             onClick={onExportPDF}
-            className="px-3 py-1.5 text-sm rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors flex items-center gap-1"
+            className="px-3 py-1.5 text-sm rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors flex items-center gap-1.5 shadow-sm"
             title="PDF olarak indir"
           >
-            <img src="/pdf-goodnotes.svg" alt="PDF" className="w-4 h-4" />
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
             PDF
           </button>
           <button
             onClick={onSave}
-            className="px-4 py-1.5 text-sm rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors font-medium flex items-center gap-1"
+            className="px-4 py-1.5 text-sm rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors font-semibold flex items-center gap-1.5 shadow-md"
+            title="Notu Kaydet"
           >
-            <img src="/save-goodnotes.svg" alt="Kaydet" className="w-4 h-4" />
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+            </svg>
             Kaydet
           </button>
         </div>
@@ -339,7 +358,7 @@ export default function Toolbar({
       {/* Color Picker Modal */}
       {showColorPicker && (
         <>
-          <div 
+          <div
             className="fixed inset-0 bg-black/20 z-40"
             onClick={() => setShowColorPicker(false)}
           />
@@ -361,9 +380,8 @@ export default function Toolbar({
                     setColor(c);
                     setShowColorPicker(false);
                   }}
-                  className={`w-12 h-12 rounded-lg border-2 transition-all ${
-                    color === c ? 'border-blue-500 scale-110 shadow-lg' : 'border-gray-300 hover:scale-105'
-                  }`}
+                  className={`w-12 h-12 rounded-lg border-2 transition-all ${color === c ? 'border-blue-500 scale-110 shadow-lg' : 'border-gray-300 hover:scale-105'
+                    }`}
                   style={{ backgroundColor: c }}
                 />
               ))}
@@ -384,7 +402,7 @@ export default function Toolbar({
       {/* Shape Menu Modal */}
       {showShapeMenu && (
         <>
-          <div 
+          <div
             className="fixed inset-0 bg-black/20 z-40"
             onClick={() => setShowShapeMenu(false)}
           />
@@ -398,34 +416,42 @@ export default function Toolbar({
                 ✕
               </button>
             </div>
-            
+
             <div className="space-y-1">
               <button
                 onClick={() => { setTool('line'); setShowShapeMenu(false); }}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <img src="/line-goodnotes.svg" alt="Çizgi" className="w-6 h-6" />
+                <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 19l14-14" />
+                </svg>
                 <span className="font-semibold text-gray-800">Çizgi</span>
               </button>
               <button
                 onClick={() => { setTool('rectangle'); setShowShapeMenu(false); }}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <img src="/rectangle-goodnotes.svg" alt="Dikdörtgen" className="w-6 h-6" />
+                <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <rect x="4" y="4" width="16" height="16" strokeWidth={2} />
+                </svg>
                 <span className="font-semibold text-gray-800">Dikdörtgen</span>
               </button>
               <button
                 onClick={() => { setTool('circle'); setShowShapeMenu(false); }}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <img src="/circle-goodnotes.svg" alt="Daire" className="w-6 h-6" />
+                <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="8" strokeWidth={2} />
+                </svg>
                 <span className="font-semibold text-gray-800">Daire</span>
               </button>
               <button
                 onClick={() => { setTool('arrow'); setShowShapeMenu(false); }}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <img src="/arrow-goodnotes.svg" alt="Ok" className="w-6 h-6" />
+                <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
                 <span className="font-semibold text-gray-800">Ok</span>
               </button>
             </div>
@@ -452,11 +478,10 @@ export default function Toolbar({
             <div className="grid grid-cols-3 gap-2 p-2">
               <button
                 onClick={() => setLineStyle('solid')}
-                className={`p-4 rounded-lg transition-all border-2 ${
-                  lineStyle === 'solid' 
-                    ? 'bg-blue-500 border-blue-600 shadow-lg' 
-                    : 'bg-gray-50 border-gray-300 hover:bg-gray-100 hover:border-gray-400'
-                }`}
+                className={`p-4 rounded-lg transition-all border-2 ${lineStyle === 'solid'
+                  ? 'bg-blue-500 border-blue-600 shadow-lg'
+                  : 'bg-gray-50 border-gray-300 hover:bg-gray-100 hover:border-gray-400'
+                  }`}
                 title="Düz Çizgi"
               >
                 <div className="flex flex-col items-center gap-2">
@@ -470,11 +495,10 @@ export default function Toolbar({
               </button>
               <button
                 onClick={() => setLineStyle('dashed')}
-                className={`p-4 rounded-lg transition-all border-2 ${
-                  lineStyle === 'dashed' 
-                    ? 'bg-blue-500 border-blue-600 shadow-lg' 
-                    : 'bg-gray-50 border-gray-300 hover:bg-gray-100 hover:border-gray-400'
-                }`}
+                className={`p-4 rounded-lg transition-all border-2 ${lineStyle === 'dashed'
+                  ? 'bg-blue-500 border-blue-600 shadow-lg'
+                  : 'bg-gray-50 border-gray-300 hover:bg-gray-100 hover:border-gray-400'
+                  }`}
                 title="Kesikli Çizgi"
               >
                 <div className="flex flex-col items-center gap-2">
@@ -488,11 +512,10 @@ export default function Toolbar({
               </button>
               <button
                 onClick={() => setLineStyle('dotted')}
-                className={`p-4 rounded-lg transition-all border-2 ${
-                  lineStyle === 'dotted' 
-                    ? 'bg-blue-500 border-blue-600 shadow-lg' 
-                    : 'bg-gray-50 border-gray-300 hover:bg-gray-100 hover:border-gray-400'
-                }`}
+                className={`p-4 rounded-lg transition-all border-2 ${lineStyle === 'dotted'
+                  ? 'bg-blue-500 border-blue-600 shadow-lg'
+                  : 'bg-gray-50 border-gray-300 hover:bg-gray-100 hover:border-gray-400'
+                  }`}
                 title="Noktalı Çizgi"
               >
                 <div className="flex flex-col items-center gap-2">
