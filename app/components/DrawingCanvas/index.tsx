@@ -235,12 +235,9 @@ export default function DrawingCanvas({
 
     // Eğer zoom aktifse çizim başlatma
     if (isZooming) return;
-    // Eğer dokunuş ise: iki parmakla dokunma veya stylus (Apple Pencil) değilse çizim başlatma
-    if ('touches' in e) {
-      if (e.touches.length > 1) return;
-      const touch = e.touches[0];
-      if ((touch as any).touchType !== 'stylus') return;
-    }
+
+    // İki parmakla dokunma varsa (zoom için) çıkış yap
+    if ('touches' in e && e.touches.length > 1) return;
 
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
@@ -256,23 +253,31 @@ export default function DrawingCanvas({
       y = (e.clientY - rect.top) * scaleY;
     }
 
-    // Text tool
+    // Text tool - Önce var olan metne tıklandı mı kontrol et
     if (tool === 'text') {
-      if (handleTextClick(x, y)) return;
+      if (handleTextClick(x, y)) {
+        e.preventDefault(); // Çizim yapılmasını engelle
+        return;
+      }
     }
 
-    // Eraser - metin silme
+    // Image tool - Önce var olan fotoğrafa tıklandı mı kontrol et
+    if (tool === 'image') {
+      if (handleImageClick(x, y)) {
+        e.preventDefault(); // Çizim yapılmasını engelle
+        return;
+      }
+    }
+
+    // Eraser - metin/fotoğraf silme
     if (tool === 'eraser') {
       if (deleteTextAtPosition(x, y)) return;
     }
 
-    // Image tool
-    if (tool === 'image') {
-      if (handleImageClick(x, y)) return;
+    // Normal çizim (sadece text/image tool değilse veya yeni ekleme yapılıyorsa)
+    if (tool !== 'text' && tool !== 'image') {
+      startDrawing(e);
     }
-
-    // Normal çizim
-    startDrawing(e);
   };
 
   const handleCanvasPointerMove = (
@@ -295,20 +300,24 @@ export default function DrawingCanvas({
       y = (e.clientY - rect.top) * scaleY;
     }
 
-    // Text taşıma
+    // Text taşıma - Öncelik 1
     if (isDraggingText) {
+      e.preventDefault(); // Çizim yapılmasını engelle
       handleTextDrag(x, y);
       return;
     }
 
-    // Image taşıma
+    // Image taşıma - Öncelik 2
     if (isDraggingImage) {
+      e.preventDefault(); // Çizim yapılmasını engelle
       handleImageDrag(x, y);
       return;
     }
 
-    // Normal çizim
-    draw(e);
+    // Normal çizim (sadece text/image tool değilse)
+    if (tool !== 'text' && tool !== 'image') {
+      draw(e);
+    }
   };
 
   const handleCanvasPointerUp = () => {
