@@ -26,15 +26,15 @@ interface DrawingCanvasProps {
   initialBackground?: BackgroundType;
 }
 
-export default function DrawingCanvas({ 
-  onSave, 
-  initialData, 
-  initialBackground = 'plain' 
+export default function DrawingCanvas({
+  onSave,
+  initialData,
+  initialBackground = 'plain'
 }: DrawingCanvasProps) {
   // Zoom ve çizim çakışmasını önlemek için
   const [isZooming, setIsZooming] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   // Canvas setup
   const { canvasRef, backgroundCanvasRef } = useCanvasSetup(
     initialData,
@@ -136,6 +136,9 @@ export default function DrawingCanvas({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // ÖNEMLİ: Canvas'ı temizle (sadece çizim katmanını, background'u değil)
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     // Metinleri çiz
     placedTexts.forEach((txt, index) => {
       ctx.font = `${txt.fontSize}px ${txt.fontFamily}`;
@@ -143,6 +146,7 @@ export default function DrawingCanvas({
       ctx.textBaseline = 'top';
       ctx.fillText(txt.text, txt.x, txt.y);
 
+      // Seçili metin için mavi kenarlık
       if (selectedTextIndex === index) {
         const metrics = ctx.measureText(txt.text);
         const textWidth = metrics.width;
@@ -159,6 +163,7 @@ export default function DrawingCanvas({
     placedImages.forEach((imgData, index) => {
       ctx.drawImage(imgData.img, imgData.x, imgData.y, imgData.width, imgData.height);
 
+      // Seçili fotoğraf için mavi kenarlık
       if (selectedPlacedImage === index) {
         ctx.strokeStyle = '#3b82f6';
         ctx.lineWidth = 2;
@@ -319,7 +324,7 @@ export default function DrawingCanvas({
       placedTexts,
       getPlacedImagesData()
     );
-    
+
     const canvas = canvasRef.current;
     const bgCanvas = backgroundCanvasRef.current;
     if (!canvas || !bgCanvas) return;
@@ -357,7 +362,7 @@ export default function DrawingCanvas({
       if (!ctx) return;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
+
       if (page.imageData) {
         const img = new Image();
         img.onload = () => {
@@ -421,10 +426,10 @@ export default function DrawingCanvas({
       {/* Canvas */}
       <div ref={containerRef} className="flex-1 overflow-auto relative bg-gray-100">
         <div className="p-5 flex items-center justify-center min-h-full">
-          <div 
-            className="relative" 
-            style={{ 
-              width: `${CANVAS_WIDTH}px`, 
+          <div
+            className="relative"
+            style={{
+              width: `${CANVAS_WIDTH}px`,
               height: `${CANVAS_HEIGHT}px`,
               transform: `scale(${scale})`,
               transformOrigin: 'center center',
@@ -444,7 +449,7 @@ export default function DrawingCanvas({
               onPointerLeave={handleCanvasPointerUp}
               className="absolute inset-0 w-full h-full shadow-lg"
             />
-            
+
             {/* Image Preview */}
             {selectedImage && (
               <div className="absolute inset-0 pointer-events-none">
