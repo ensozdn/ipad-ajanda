@@ -1,3 +1,5 @@
+  // Zoom ve çizim çakışmasını önlemek için
+  const [isZooming, setIsZooming] = useState(false);
 'use client';
 
 import { useRef, useEffect, useState } from 'react';
@@ -186,14 +188,23 @@ export default function DrawingCanvas({
     if (!canvas) return;
 
     const handleTouchStart = (e: TouchEvent) => {
-      handleCanvasPointerDown(e as any);
+      if (e.touches.length === 2) {
+        setIsZooming(true);
+        return;
+      }
+      if (!isZooming) handleCanvasPointerDown(e as any);
     };
 
     const handleTouchMove = (e: TouchEvent) => {
+      if (isZooming) return;
       handleCanvasPointerMove(e as any);
     };
 
-    const handleTouchEnd = () => {
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (isZooming && (!e.touches || e.touches.length < 2)) {
+        setIsZooming(false);
+        return;
+      }
       handleCanvasPointerUp();
     };
 
@@ -214,11 +225,12 @@ export default function DrawingCanvas({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    // Eğer zoom aktifse çizim başlatma
+    if (isZooming) return;
     // Eğer dokunuş ise: iki parmakla dokunma veya stylus (Apple Pencil) değilse çizim başlatma
     if ('touches' in e) {
-      if (e.touches.length > 1) return; // 2+ parmak: zoom veya yanlışlıkla el teması, çizim yok
+      if (e.touches.length > 1) return;
       const touch = e.touches[0];
-      // Sadece stylus (Apple Pencil) ile çizime izin ver
       if ((touch as any).touchType !== 'stylus') return;
     }
 
